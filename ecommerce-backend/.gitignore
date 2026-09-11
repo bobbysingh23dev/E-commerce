@@ -1,0 +1,11 @@
+# Dependencies — reinstalled from package.json, never committed
+node_modules/
+
+# Compiled output — generated from src/ by `tsc`
+dist/
+
+# Secrets & environment config — NEVER commit this
+.env
+
+# macOS junk
+.DS_Store

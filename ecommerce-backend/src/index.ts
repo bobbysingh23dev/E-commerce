@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", routes);
+app.use("/", routes);
 
 // ---- Start the server ----
 const PORT = Number(process.env.PORT) || 4000;

@@ -8,3 +8,7 @@ export async function createProduct(input: Omit<Product, "id">) {
 export async function getProductById(id: number) {
   return productModel.getProductById(id);
 }
+
+export async function getAllProducts() {
+  return productModel.getAllProducts();
+}

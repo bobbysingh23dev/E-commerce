@@ -27,4 +27,5 @@ export const pool = new Pool({
  * that get safely substituted for $1, $2, ... (this is how we avoid SQL
  * injection — never build SQL by string-concatenating user input).
  */
-export const query = (text: string, params?: unknown[]) => pool.query(text, params);
+export const query = (text: string, params?: unknown[]) =>
+  pool.query(text, params);

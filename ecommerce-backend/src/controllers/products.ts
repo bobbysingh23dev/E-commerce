@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as productService from "../services/products";
+import { Product } from "../types/product";
 
 // HTTP layer: reads req, validates, calls the service, sends res. No SQL.
 
@@ -56,6 +57,42 @@ export async function getAllProducts(req: Request, res: Response) {
       return res.status(404).json({ error: "No products found" });
     }
     res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function putProductById(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid product ID" });
+    }
+    const input: Product = req.body ?? {};
+
+    // Validate required fields.
+    if (
+      !input.name ||
+      input.price === undefined ||
+      input.stock_quantity === undefined ||
+      input.description === undefined
+    ) {
+      return res.status(400).json({
+        error: "name, price, stock_quantity, and description are required",
+      });
+    }
+    const updatedProduct = await productService.putProductById(id, input);
+
+    if (!updatedProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json({
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

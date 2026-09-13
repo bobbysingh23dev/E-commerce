@@ -24,3 +24,12 @@ export async function getAllProducts() {
   const result = await pool.query(`SELECT * FROM products`);
   return result.rows;
 }
+
+export async function putProductById(id: number, input: Omit<Product, "id">) {
+  const { name, description, price, stock_quantity } = input;
+  const result = await pool.query(
+    `UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4 WHERE id = $5 RETURNING *`,
+    [name, description ?? null, price, stock_quantity ?? 0, id],
+  );
+  return result.rows[0];
+}

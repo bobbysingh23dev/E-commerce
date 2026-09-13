@@ -5,13 +5,16 @@ import {
   getAllProducts,
   putProductById,
 } from "../controllers/products";
+import { validateId } from "../middlewares/validateId";
+import { validateProductBody } from "../middlewares/validateProductBody";
 
-// Pure wiring: map URL + method → controller function.
+// Pure wiring: map URL + method → [middlewares...] → controller.
+// Requests flow left to right; any middleware can stop them before the controller.
 const productsRouter = Router();
 
-productsRouter.post("/", createProduct);
+productsRouter.post("/", validateProductBody(false), createProduct);
 productsRouter.get("/", getAllProducts);
-productsRouter.get("/:id", getProductById);
-productsRouter.put("/:id", putProductById);
+productsRouter.get("/:id", validateId, getProductById);
+productsRouter.put("/:id", validateId, validateProductBody(true), putProductById);
 
 export default productsRouter;

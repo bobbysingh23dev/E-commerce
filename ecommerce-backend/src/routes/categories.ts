@@ -11,5 +11,12 @@ categoriesRouter.post(
 );
 
 categoriesRouter.get("/", categoryController.getAllCategories);
+categoriesRouter.get("/:id", categoryController.getCategoryById);
+categoriesRouter.put(
+  "/:id",
+  validateCategoryBody,
+  categoryController.updateCategoryById,
+);
+categoriesRouter.delete("/:id", categoryController.deleteCategory);
 
 export default categoriesRouter;

@@ -4,6 +4,7 @@ import {
   getProductById,
   getAllProducts,
   putProductById,
+  deleteProductById,
 } from "../controllers/products";
 import { validateId } from "../middlewares/validateId";
 import { validateProductBody } from "../middlewares/validateProductBody";
@@ -15,6 +16,12 @@ const productsRouter = Router();
 productsRouter.post("/", validateProductBody(false), createProduct);
 productsRouter.get("/", getAllProducts);
 productsRouter.get("/:id", validateId, getProductById);
-productsRouter.put("/:id", validateId, validateProductBody(true), putProductById);
+productsRouter.put(
+  "/:id",
+  validateId,
+  validateProductBody(true),
+  putProductById,
+);
+productsRouter.delete("/:id", validateId, deleteProductById);
 
 export default productsRouter;

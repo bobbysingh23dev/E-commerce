@@ -60,3 +60,18 @@ export async function putProductById(req: Request, res: Response) {
     res.status(500).json({ error: "Internal server error" });
   }
 }
+
+export async function deleteProductById(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const deletedProduct = await productService.deleteProductById(id);
+
+    if (!deletedProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    res.status(200).json(deletedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}

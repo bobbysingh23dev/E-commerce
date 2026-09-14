@@ -33,3 +33,11 @@ export async function putProductById(id: number, input: Omit<Product, "id">) {
   );
   return result.rows[0];
 }
+
+export async function deleteProductById(id: number) {
+  const result = await pool.query(
+    `DELETE FROM products WHERE id = $1 RETURNING *`,
+    [id],
+  );
+  return result.rows[0];
+}

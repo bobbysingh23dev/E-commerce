@@ -16,3 +16,7 @@ export async function getAllProducts() {
 export async function putProductById(id: number, input: Omit<Product, "id">) {
   return productModel.putProductById(id, input);
 }
+
+export async function deleteProductById(id: number) {
+  return productModel.deleteProductById(id);
+}

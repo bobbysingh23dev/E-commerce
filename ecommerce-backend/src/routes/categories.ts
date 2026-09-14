@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as categoryController from "../controllers/categories";
 import { validateCategoryBody } from "../middlewares/validateCategoryBody";
+import { validateId } from "../middlewares/validateId";
 
 const categoriesRouter = Router();
 
@@ -11,12 +12,13 @@ categoriesRouter.post(
 );
 
 categoriesRouter.get("/", categoryController.getAllCategories);
-categoriesRouter.get("/:id", categoryController.getCategoryById);
+categoriesRouter.get("/:id", validateId, categoryController.getCategoryById);
 categoriesRouter.put(
   "/:id",
   validateCategoryBody,
+  validateId,
   categoryController.updateCategoryById,
 );
-categoriesRouter.delete("/:id", categoryController.deleteCategory);
+categoriesRouter.delete("/:id", validateId, categoryController.deleteCategory);
 
 export default categoriesRouter;

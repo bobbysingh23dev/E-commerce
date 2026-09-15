@@ -11,7 +11,13 @@ export async function createProduct(req: Request, res: Response) {
     const input: Omit<Product, "id"> = req.body;
     const product = await productService.createProduct(input);
     res.status(201).json(product); // return the created resource directly
-  } catch (error) {
+  } catch (error: any) {
+    // FK violation: category_id points to a category that doesn't exist.
+    if (error.code === "23503") {
+      return res
+        .status(400)
+        .json({ error: "category_id does not reference an existing category" });
+    }
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -24,7 +30,7 @@ export async function getAllProducts(req: Request, res: Response) {
       return res.status(404).json({ error: "No products found" });
     }
     res.status(200).json(products);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -39,7 +45,7 @@ export async function getProductById(req: Request, res: Response) {
       return res.status(404).json({ error: "Product not found" });
     }
     res.status(200).json(product);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -55,7 +61,13 @@ export async function putProductById(req: Request, res: Response) {
       return res.status(404).json({ error: "Product not found" });
     }
     res.status(200).json(updatedProduct); // return the updated resource directly
-  } catch (error) {
+  } catch (error: any) {
+    // FK violation: category_id points to a category that doesn't exist.
+    if (error.code === "23503") {
+      return res
+        .status(400)
+        .json({ error: "category_id does not reference an existing category" });
+    }
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }

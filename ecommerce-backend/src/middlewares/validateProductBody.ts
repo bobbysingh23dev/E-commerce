@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from "express";
 
 export function validateProductBody(strict: boolean) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { name, description, price, stock_quantity } = req.body ?? {};
+    const { name, description, price, stock_quantity, category_id } =
+      req.body ?? {};
     const errors: string[] = [];
 
     // name — always required; must be a non-empty string.
@@ -27,6 +28,15 @@ export function validateProductBody(strict: boolean) {
       (!Number.isInteger(stock_quantity) || stock_quantity < 0)
     ) {
       errors.push("stock_quantity must be an integer >= 0");
+    }
+
+    // category_id — optional (a product may be uncategorized); if present, positive integer.
+    if (
+      category_id !== undefined &&
+      category_id !== null &&
+      (!Number.isInteger(category_id) || category_id <= 0)
+    ) {
+      errors.push("category_id must be a positive integer");
     }
 
     if (errors.length > 0) {

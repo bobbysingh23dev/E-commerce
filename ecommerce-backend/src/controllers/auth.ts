@@ -24,3 +24,16 @@ export async function registerUser(req: Request, res: Response) {
     res.status(500).json({ error: "Internal server error" });
   }
 }
+
+export async function loginUser(req: Request, res: Response) {
+  try {
+    const { email, password } = req.body;
+    const result = await authService.loginUser(email, password);
+    if (!result) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+}

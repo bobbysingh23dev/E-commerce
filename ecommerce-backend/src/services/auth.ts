@@ -15,12 +15,12 @@ export const loginUser = async (email: string, password: string) => {
   // 1. Fetch the user (need their stored hash to compare against)
   const user = await userModel.finduserByEmail(email);
   if (!user) {
-    throw new Error("Invalid email or password");
+    return null;
   }
   // 2. Compare the given password to the stored hash
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatch) {
-    throw new Error("Invalid email or password");
+    return null;
   }
   // 3. Passwords match → issue the token
   const jwtToken = jwt.sign(

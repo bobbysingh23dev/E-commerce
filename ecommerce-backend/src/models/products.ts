@@ -21,7 +21,12 @@ export async function getProductById(id: number) {
 }
 
 export async function getAllProducts() {
-  const result = await pool.query(`SELECT * FROM products`);
+  const result = await pool.query(
+    `SELECT p.*, c.name AS category_name
+     FROM products p
+     LEFT JOIN categories c ON c.id = p.category_id
+     ORDER BY p.id`,
+  );
   return result.rows;
 }
 

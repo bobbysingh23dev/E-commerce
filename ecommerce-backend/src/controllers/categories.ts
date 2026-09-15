@@ -40,7 +40,7 @@ export async function getCategoryById(req: Request, res: Response) {
       return res.status(404).json({ error: "Category not found" });
     }
     res.status(200).json(category);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }

@@ -16,7 +16,14 @@ export async function insertProduct(input: Omit<Product, "id">) {
 }
 
 export async function getProductById(id: number) {
-  const result = await pool.query(`SELECT * FROM products WHERE id = $1`, [id]);
+  const result = await pool.query(
+    `
+    SELECT p.*, c.name AS category_name
+    FROM products p
+    LEFT JOIN categories c ON  c.id = p.category_id
+    WHERE p.id = $1`,
+    [id],
+  );
   return result.rows[0];
 }
 

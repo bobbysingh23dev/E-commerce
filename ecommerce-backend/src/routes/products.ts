@@ -17,18 +17,14 @@ const productsRouter = Router();
 
 productsRouter.post(
   "/",
+  authenticate,
   requireAdmin,
   validateProductBody(false),
   createProduct,
 );
-productsRouter.get("/", authenticate, requireAdmin, getAllProducts);
-productsRouter.get(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  validateId,
-  getProductById,
-);
+productsRouter.get("/", getAllProducts);
+productsRouter.get("/:id", validateId, getProductById);
+
 productsRouter.put(
   "/:id",
   authenticate,

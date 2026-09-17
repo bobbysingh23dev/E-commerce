@@ -1,4 +1,5 @@
 import { pool } from "../config/db";
+import * as orderModel from "../models/orders";
 
 type OrderItemInput = { product_id: number; quantity: number }[];
 type LineItems = {
@@ -75,3 +76,6 @@ export const createOrder = async (user_id: number, items: OrderItemInput) => {
     client.release();
   }
 };
+export async function getOrdersByUser(userId: number) {
+  return orderModel.getOrdersByUser(userId);
+}

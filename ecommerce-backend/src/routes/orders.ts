@@ -7,5 +7,6 @@ const orderRouter = Router();
 
 orderRouter.use(authenticate);
 orderRouter.post("/", validateOrderBody, orderController.createOrder);
+orderRouter.get("/", orderController.getOrdersByUser);
 
 export default orderRouter;

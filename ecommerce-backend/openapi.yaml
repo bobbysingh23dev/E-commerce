@@ -1,0 +1,399 @@
+openapi: 3.0.3
+info:
+  title: Ecommerce Backend API
+  version: 1.0.0
+  description: >
+    REST API for the ecommerce backend — products, categories, users/auth, and orders.
+
+    **Auth:** obtain a token from `POST /auth/login`, then send it on protected
+    requests as a header: `Authorization: Bearer <token>`.
+
+    **Access levels:**
+    - **Public** — no token needed (browsing products/categories, register, login).
+    - **Authenticated** — any logged-in user (all `/orders` routes).
+    - **Admin** — token belonging to a user with `role: "admin"` (product write routes).
+
+servers:
+  - url: http://localhost:4000
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Registration and login
+  - name: Products
+    description: Product catalog (reads public, writes admin-only)
+  - name: Categories
+    description: Product categories
+  - name: Orders
+    description: Customer orders (all routes require login)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Paste the `jwtToken` from POST /auth/login."
+
+  schemas:
+    # ---------- Shared ----------
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Order not found"
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed"
+        details:
+          type: array
+          items:
+            type: string
+          example: ["price must be a number >= 0"]
+
+    # ---------- Auth ----------
+    RegisterInput:
+      type: object
+      required: [email, password, name]
+      properties:
+        email: { type: string, format: email, example: "alice@test.com" }
+        password: { type: string, minLength: 6, example: "secret123" }
+        name: { type: string, example: "Alice" }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: "alice@test.com" }
+        password: { type: string, example: "secret123" }
+    PublicUser:
+      type: object
+      properties:
+        id: { type: integer, example: 2 }
+        email: { type: string, example: "alice@test.com" }
+        name: { type: string, example: "Alice" }
+        role: { type: string, enum: [customer, admin], example: "customer" }
+    LoginResponse:
+      type: object
+      properties:
+        jwtToken: { type: string, example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+        user: { $ref: "#/components/schemas/PublicUser" }
+
+    # ---------- Products ----------
+    Product:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: "T-shirt" }
+        description: { type: string, nullable: true, example: "Cotton tee" }
+        price: { type: string, description: "Decimal returned as a string to preserve precision", example: "19.99" }
+        stock_quantity: { type: integer, example: 100 }
+        is_active: { type: boolean, example: true }
+        category_id: { type: integer, nullable: true, example: 1 }
+        category_name: { type: string, nullable: true, description: "Present on list/detail reads (via JOIN)", example: "Apparel" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ProductInput:
+      type: object
+      required: [name, price]
+      properties:
+        name: { type: string, example: "Hoodie" }
+        description: { type: string, nullable: true, example: "Warm cotton hoodie" }
+        price: { type: number, description: "Send as a JSON number, not a string", example: 49.99 }
+        stock_quantity: { type: integer, default: 0, example: 50 }
+        category_id: { type: integer, nullable: true, example: 1 }
+
+    # ---------- Categories ----------
+    Category:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: "Apparel" }
+        description: { type: string, nullable: true, example: "Clothing and wearables" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: "Kitchenware" }
+        description: { type: string, nullable: true, example: "Home & kitchen goods" }
+
+    # ---------- Orders ----------
+    OrderItemInput:
+      type: object
+      required: [product_id, quantity]
+      properties:
+        product_id: { type: integer, example: 1 }
+        quantity: { type: integer, minimum: 1, example: 2 }
+    OrderInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/OrderItemInput" }
+    OrderSummary:
+      type: object
+      properties:
+        id: { type: integer, example: 2 }
+        total: { type: string, example: "54.97" }
+        status: { type: string, enum: [pending, paid, completed, cancelled], example: "pending" }
+        created_at: { type: string, format: date-time }
+    OrderItem:
+      type: object
+      properties:
+        id: { type: integer, example: 3 }
+        product_id: { type: integer, example: 1 }
+        product_name: { type: string, example: "T-shirt" }
+        quantity: { type: integer, example: 2 }
+        unit_price: { type: string, example: "19.99" }
+    OrderDetail:
+      type: object
+      properties:
+        id: { type: integer, example: 2 }
+        total: { type: string, example: "54.97" }
+        status: { type: string, enum: [pending, paid, completed, cancelled], example: "pending" }
+        created_at: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+    StatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [pending, paid, completed, cancelled], example: "cancelled" }
+
+paths:
+  # ==================== AUTH ====================
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user (always created as a customer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "User registered successfully" }
+                  newUser: { $ref: "#/components/schemas/PublicUser" }
+        "400": { description: Validation failed, content: { application/json: { schema: { $ref: "#/components/schemas/ValidationError" } } } }
+        "409": { description: Email already exists, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive a JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginInput" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/LoginResponse" } } } }
+        "400": { description: Validation failed, content: { application/json: { schema: { $ref: "#/components/schemas/ValidationError" } } } }
+        "401": { description: Invalid email or password, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  # ==================== PRODUCTS ====================
+  /products:
+    get:
+      tags: [Products]
+      summary: List all products (public)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+    post:
+      tags: [Products]
+      summary: Create a product (admin only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Product" } } } }
+        "400": { description: Validation failed or category_id does not exist, content: { application/json: { schema: { $ref: "#/components/schemas/ValidationError" } } } }
+        "401": { description: No/invalid token, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "403": { description: Not an admin, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Products]
+      summary: Get one product (public)
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Product" } } } }
+        "400": { description: Invalid id, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "404": { description: Not found, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+    put:
+      tags: [Products]
+      summary: Replace a product (admin only, full update)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Product" } } } }
+        "400": { description: Validation failed, content: { application/json: { schema: { $ref: "#/components/schemas/ValidationError" } } } }
+        "401": { description: No/invalid token }
+        "403": { description: Not an admin }
+        "404": { description: Not found }
+    delete:
+      tags: [Products]
+      summary: Delete a product (admin only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Deleted (returns the deleted product), content: { application/json: { schema: { $ref: "#/components/schemas/Product" } } } }
+        "401": { description: No/invalid token }
+        "403": { description: Not an admin }
+        "404": { description: Not found }
+
+  # ==================== CATEGORIES ====================
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List all categories (public)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Category" }
+    post:
+      tags: [Categories]
+      summary: "Create a category (NOTE: currently public — admin protection planned)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CategoryInput" }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Category" } } } }
+        "400": { description: Validation failed, content: { application/json: { schema: { $ref: "#/components/schemas/ValidationError" } } } }
+        "409": { description: A category with that name already exists, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Categories]
+      summary: Get one category (public)
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Category" } } } }
+        "400": { description: Invalid id }
+        "404": { description: Not found }
+    put:
+      tags: [Categories]
+      summary: "Update a category (NOTE: currently public — admin protection planned)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CategoryInput" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Category" } } } }
+        "400": { description: Validation failed }
+        "404": { description: Not found }
+        "409": { description: Name already exists }
+    delete:
+      tags: [Categories]
+      summary: "Delete a category (NOTE: currently public — admin protection planned)"
+      responses:
+        "200": { description: Deleted, content: { application/json: { schema: { $ref: "#/components/schemas/Category" } } } }
+        "404": { description: Not found }
+
+  # ==================== ORDERS ====================
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Place an order (authenticated). Checks stock, computes total, decrements inventory — all in a transaction.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Order created successfully" }
+                  order: { $ref: "#/components/schemas/OrderSummary" }
+        "400": { description: "Validation failed, out of stock, or product not found", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "401": { description: No/invalid token }
+    get:
+      tags: [Orders]
+      summary: List the logged-in user's own orders (authenticated)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OrderSummary" }
+        "401": { description: No/invalid token }
+
+  /orders/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Orders]
+      summary: Get one of your own orders with its items (authenticated). 404 if it isn't yours.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/OrderDetail" } } } }
+        "400": { description: Invalid id }
+        "401": { description: No/invalid token }
+        "404": { description: Not found (or not yours) }
+    patch:
+      tags: [Orders]
+      summary: Update an order's status (authenticated). Cancelling restocks the products (transaction).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StatusInput" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/OrderSummary" } } } }
+        "400": { description: Invalid status or id, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "401": { description: No/invalid token }
+        "404": { description: Not found (or not yours) }

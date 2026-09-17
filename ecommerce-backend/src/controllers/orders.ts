@@ -23,11 +23,30 @@ export const getOrdersByUser = async (req: Request, res: Response) => {
   try {
     const user_id: number = (req as any).user.userId;
     const orders = await OrderServices.getOrdersByUser(user_id);
-    res.status(200).json(orders); // 200 = OK, just return the list
+    if (!orders) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.status(200).json(orders);
   } catch (error: any) {
     console.log(error);
     res.status(400).json({
       error: error.message,
     });
+  }
+};
+
+export const getOrderById = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const orderId = Number(req.params.id);
+
+    const order = await OrderServices.getOrderById(orderId, userId);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.status(200).json(order);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

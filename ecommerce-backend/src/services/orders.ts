@@ -79,3 +79,11 @@ export const createOrder = async (user_id: number, items: OrderItemInput) => {
 export async function getOrdersByUser(userId: number) {
   return orderModel.getOrdersByUser(userId);
 }
+
+export async function getOrderById(orderId: number, userId: number) {
+  const order = await orderModel.getOrderById(orderId, userId); // ownership gate
+  if (!order) return null; // not found OR not yours
+
+  const items = await orderModel.getOrderItems(orderId);
+  return { ...order, items }; // the full receipt
+}

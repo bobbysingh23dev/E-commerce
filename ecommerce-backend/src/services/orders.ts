@@ -87,3 +87,54 @@ export async function getOrderById(orderId: number, userId: number) {
   const items = await orderModel.getOrderItems(orderId);
   return { ...order, items }; // the full receipt
 }
+
+export async function updateOrderStatus(
+  orderId: number,
+  userId: number,
+  newStatus: string,
+) {
+  const order = await orderModel.getOrderById(orderId, userId); // ownership + current status
+  if (!order) return null; // 404
+
+  // Cancelling → restock the products (reverse transaction)
+  if (newStatus === "cancelled" && order.status !== "cancelled") {
+    return cancelOrderWithRestock(orderId, userId);
+  }
+
+  // Otherwise, a plain status update
+  return orderModel.updateOrderStatus(orderId, userId, newStatus);
+}
+
+async function cancelOrderWithRestock(orderId: number, userId: number) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1. Put stock BACK for each item (the reverse of createOrder)
+    const items = await client.query(
+      "SELECT product_id, quantity FROM order_items WHERE order_id = $1",
+      [orderId],
+    );
+    for (const item of items.rows) {
+      await client.query(
+        "UPDATE products SET stock_quantity = stock_quantity + $1 WHERE id = $2",
+        [item.quantity, item.product_id],
+      );
+    }
+
+    // 2. Mark the order cancelled
+    const result = await client.query(
+      `UPDATE orders SET status = 'cancelled', updated_at = now()
+       WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [orderId, userId],
+    );
+
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}

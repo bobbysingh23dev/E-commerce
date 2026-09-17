@@ -33,3 +33,18 @@ export async function getOrderItems(orderId: number) {
   );
   return result.rows;
 }
+
+// Simple status change (for non-cancel transitions like → paid)
+export async function updateOrderStatus(
+  orderId: number,
+  userId: number,
+  status: string,
+) {
+  const result = await pool.query(
+    `UPDATE orders SET status = $1, updated_at = now()
+     WHERE id = $2 AND user_id = $3
+     RETURNING *`,
+    [status, orderId, userId],
+  );
+  return result.rows[0];
+}

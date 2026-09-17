@@ -50,3 +50,20 @@ export const getOrderById = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const orderId = Number(req.params.id);
+    const { status } = req.body;
+
+    const order = await OrderServices.updateOrderStatus(orderId, userId, status);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.status(200).json(order);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

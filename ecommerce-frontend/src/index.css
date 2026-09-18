@@ -1,0 +1,7 @@
+/* This single import gives you every Tailwind utility class (Tailwind v4). */
+@import "tailwindcss";
+
+/* A calm default background for the whole app. */
+body {
+  background-color: #f8fafc; /* slate-50 */
+}

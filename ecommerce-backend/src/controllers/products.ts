@@ -25,8 +25,10 @@ export async function createProduct(req: Request, res: Response) {
 
 export async function getAllProducts(req: Request, res: Response) {
   try {
-    const products = await productService.getAllProducts();
-    if (!products || products.length === 0) {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const products = await productService.getAllProducts(page, limit);
+    if (!products || (products.data as any) === 0) {
       return res.status(404).json({ error: "No products found" });
     }
     res.status(200).json(products);

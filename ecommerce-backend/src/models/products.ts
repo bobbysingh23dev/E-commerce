@@ -33,14 +33,21 @@ export async function getProductById(id: number) {
   return result.rows[0];
 }
 
-export async function getAllProducts() {
+export async function getAllProducts(limit: number, offset: number) {
   const result = await pool.query(
     `SELECT p.*, c.name AS category_name
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
-     ORDER BY p.id`,
+     ORDER BY p.id
+     LIMIT $1 OFFSET $2`,
+    [limit, offset],
   );
   return result.rows;
+}
+
+export async function countProducts() {
+  const result = await pool.query("SELECT COUNT(*) FROM products");
+  return Number(result.rows[0].count);
 }
 
 export async function putProductById(id: number, input: Omit<Product, "id">) {

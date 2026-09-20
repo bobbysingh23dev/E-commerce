@@ -1,91 +1,43 @@
 import { Request, Response } from "express";
 import * as productService from "../services/products";
 import { Product } from "../types/product";
+import { NotFoundError } from "../errors/AppError";
 
 // HTTP layer: reads req, calls the service, sends res.
-// Validation now lives in middleware (see src/middlewares/), so these handlers
-// can trust that req.params.id and req.body are already valid.
+// No try/catch — thrown errors are forwarded to the central errorHandler.
+// Validation lives in middleware; DB errors (23505/23503) are mapped centrally.
 
 export async function createProduct(req: Request, res: Response) {
-  try {
-    const input: Omit<Product, "id"> = req.body;
-    const product = await productService.createProduct(input);
-    res.status(201).json(product); // return the created resource directly
-  } catch (error: any) {
-    // FK violation: category_id points to a category that doesn't exist.
-    if (error.code === "23503") {
-      return res
-        .status(400)
-        .json({ error: "category_id does not reference an existing category" });
-    }
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  const input: Omit<Product, "id"> = req.body;
+  const product = await productService.createProduct(input);
+  res.status(201).json(product);
 }
 
 export async function getAllProducts(req: Request, res: Response) {
-  try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
-    const products = await productService.getAllProducts(page, limit);
-    if (!products || (products.data as any) === 0) {
-      return res.status(404).json({ error: "No products found" });
-    }
-    res.status(200).json(products);
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+  const products = await productService.getAllProducts(page, limit);
+  res.status(200).json(products);
 }
 
 export async function getProductById(req: Request, res: Response) {
-  try {
-    const id = Number(req.params.id); // validateId middleware already checked it
-    const product = await productService.getProductById(id);
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-    res.status(200).json(product);
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  const id = Number(req.params.id);
+  const product = await productService.getProductById(id);
+  if (!product) throw new NotFoundError("Product not found");
+  res.status(200).json(product);
 }
 
 export async function putProductById(req: Request, res: Response) {
-  try {
-    const id = Number(req.params.id);
-    const input: Omit<Product, "id"> = req.body;
-    const updatedProduct = await productService.putProductById(id, input);
-
-    if (!updatedProduct) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-    res.status(200).json(updatedProduct); // return the updated resource directly
-  } catch (error: any) {
-    // FK violation: category_id points to a category that doesn't exist.
-    if (error.code === "23503") {
-      return res
-        .status(400)
-        .json({ error: "category_id does not reference an existing category" });
-    }
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  const id = Number(req.params.id);
+  const input: Omit<Product, "id"> = req.body;
+  const updatedProduct = await productService.putProductById(id, input);
+  if (!updatedProduct) throw new NotFoundError("Product not found");
+  res.status(200).json(updatedProduct);
 }
 
 export async function deleteProductById(req: Request, res: Response) {
-  try {
-    const id = Number(req.params.id);
-    const deletedProduct = await productService.deleteProductById(id);
-
-    if (!deletedProduct) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-    res.status(200).json(deletedProduct);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  const id = Number(req.params.id);
+  const deletedProduct = await productService.deleteProductById(id);
+  if (!deletedProduct) throw new NotFoundError("Product not found");
+  res.status(200).json(deletedProduct);
 }

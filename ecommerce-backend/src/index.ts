@@ -5,6 +5,7 @@ import path from "path";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import routes from "./routes";
+import { errorHandler } from "./middlewares/errorHandler";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const swaggerDocument = YAML.load(path.join(__dirname, "..", "openapi.yaml"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/", routes);
+app.use(errorHandler); // ← must come AFTER all routes
 
 // ---- Start the server ----
 const PORT = Number(process.env.PORT) || 4000;

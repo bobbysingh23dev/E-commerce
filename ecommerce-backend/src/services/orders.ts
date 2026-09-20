@@ -1,5 +1,6 @@
 import { pool } from "../config/db";
 import * as orderModel from "../models/orders";
+import { BadRequestError } from "../errors/AppError";
 
 type OrderItemInput = { product_id: number; quantity: number }[];
 type LineItems = {
@@ -11,7 +12,7 @@ type LineItems = {
 export const createOrder = async (user_id: number, items: OrderItemInput) => {
   // Business rule: no empty orders.
   if (!items || items?.length === 0) {
-    throw new Error("Order must have at least one item");
+    throw new BadRequestError("Order must have at least one item");
   }
 
   const client = await pool.connect(); // one dedicated connection for the transaction
@@ -29,11 +30,11 @@ export const createOrder = async (user_id: number, items: OrderItemInput) => {
       const product = result.rows[0];
 
       if (!product) {
-        throw new Error(`Product with ${item.product_id} is not found`);
+        throw new BadRequestError(`Product with ${item.product_id} is not found`);
       }
 
       if (product.stock_quantity < item.quantity) {
-        throw new Error(`Not enough stock for product ${item.product_id}`);
+        throw new BadRequestError(`Not enough stock for product ${item.product_id}`);
       }
       const unitPrice = Number(product.price); // NUMERIC comes back as string → convert
 

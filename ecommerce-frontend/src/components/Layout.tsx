@@ -38,6 +38,9 @@ export default function Layout() {
                 different links. */}
             {user ? (
               <>
+                <Link to="/orders" className="hover:text-slate-900">
+                  Orders
+                </Link>
                 <Link to="/account" className="hover:text-slate-900">
                   {user.name}
                 </Link>

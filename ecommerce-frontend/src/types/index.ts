@@ -56,3 +56,18 @@ export interface OrderItem {
 export interface OrderDetail extends OrderSummary {
   items: OrderItem[];
 }
+
+// The backend now wraps list endpoints in a pagination envelope.
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number; // total matching rows (across all pages)
+  totalPages: number;
+}
+
+// A generic: Paginated<Product> = { data: Product[], pagination }.
+// The <T> means this one type works for any kind of list response.
+export interface Paginated<T> {
+  data: T[];
+  pagination: Pagination;
+}

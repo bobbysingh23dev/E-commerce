@@ -8,6 +8,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AccountPage from "./pages/AccountPage";
 import CartPage from "./pages/CartPage";
+import OrdersPage from "./pages/OrdersPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
 
 // Providers wrap the Router so every page + the nav can call useAuth()/useCart().
 export default function App() {
@@ -32,7 +34,22 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Future protected routes: /orders, /orders/:id ... */}
+              <Route
+                path="orders"
+                element={
+                  <ProtectedRoute>
+                    <OrdersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="orders/:id"
+                element={
+                  <ProtectedRoute>
+                    <OrderDetailPage />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>

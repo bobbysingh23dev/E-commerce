@@ -1,5 +1,5 @@
 import { pool } from "../config/db";
-import { Product } from "../types/product";
+import type { Product } from "../types/product";
 
 // Data-access layer: runs SQL, returns plain rows. No knowledge of HTTP.
 

@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { RegisterInput } from "../types/user";
+import type { Request, Response } from "express";
+import type { RegisterInput } from "../types/user";
 import * as authService from "../services/auth";
 import { UnauthorizedError } from "../errors/AppError";
 

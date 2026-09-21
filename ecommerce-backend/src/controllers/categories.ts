@@ -1,6 +1,6 @@
 import * as CategoryService from "../services/categories";
-import { Request, Response } from "express";
-import { Category } from "../types/category";
+import type { Request, Response } from "express";
+import type { Category } from "../types/category";
 import { NotFoundError } from "../errors/AppError";
 
 // Duplicate-name (Postgres 23505) is mapped to 409 by the central errorHandler.

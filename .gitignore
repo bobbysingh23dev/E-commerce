@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Env / secrets
+.env
+
+# Build output
+dist/
+
+# OS junk
+.DS_Store

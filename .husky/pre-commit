@@ -1,0 +1,5 @@
+# Runs before every commit (from the git root = this monorepo).
+# Delegate to the backend, where lint-staged + biome + prettier live.
+# lint-staged only touches files you've staged, and only the ones under
+# ecommerce-backend/, so an empty/backend-less commit just passes through.
+cd ecommerce-backend && npx lint-staged

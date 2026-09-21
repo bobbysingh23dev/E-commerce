@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import * as userModel from "../models/users";
-import { RegisterInput } from "../types/user";
+import type { RegisterInput } from "../types/user";
 import jwt from "jsonwebtoken";
 
 export async function registerUser(input: RegisterInput) {

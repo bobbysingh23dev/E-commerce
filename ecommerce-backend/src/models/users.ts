@@ -1,5 +1,5 @@
 import { pool } from "../config/db";
-import { User } from "../types/user";
+import type { User } from "../types/user";
 
 export async function createUser(user: Omit<User, "id">): Promise<User> {
   try {

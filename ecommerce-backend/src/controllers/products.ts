@@ -16,7 +16,14 @@ export async function createProduct(req: Request, res: Response) {
 export async function getAllProducts(req: Request, res: Response) {
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
-  const products = await productService.getAllProducts(page, limit);
+
+  // Only add category_id to filters when it's actually provided.
+  const filters: { category_id?: number } = {};
+  if (req.query.category_id !== undefined) {
+    filters.category_id = Number(req.query.category_id);
+  }
+
+  const products = await productService.getAllProducts(filters, page, limit);
   res.status(200).json(products);
 }
 

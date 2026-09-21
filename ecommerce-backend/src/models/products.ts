@@ -33,20 +33,54 @@ export async function getProductById(id: number) {
   return result.rows[0];
 }
 
-export async function getAllProducts(limit: number, offset: number) {
-  const result = await pool.query(
-    `SELECT p.*, c.name AS category_name
+export async function getAllProducts(
+  filters: { category_id?: number },
+  limit: number,
+  offset: number,
+) {
+  const conditions: string[] = [];
+  const params: any[] = [];
+
+  if (filters.category_id !== undefined) {
+    params.push(filters.category_id);
+    conditions.push(`p.category_id = $${params.length}`);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  params.push(limit, offset); // pagination params come last
+
+  const sql = `SELECT p.*, c.name AS category_name
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
+     ${where}
      ORDER BY p.id
-     LIMIT $1 OFFSET $2`,
-    [limit, offset],
-  );
+     LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+  // 🔍 DEBUG — watch how the query is built (remove later)
+  // console.log("🔍 filters   :", filters);
+  // console.log("🔍 conditions:", conditions);
+  // console.log("🔍 where     :", where);
+  // console.log("🔍 params    :", params);
+  // console.log("🔍 SQL       :", sql);
+
+  const result = await pool.query(sql, params);
   return result.rows;
 }
 
-export async function countProducts() {
-  const result = await pool.query("SELECT COUNT(*) FROM products");
+export async function countProducts(filters: { category_id?: number }) {
+  const conditions: string[] = [];
+  const params: any[] = [];
+
+  if (filters.category_id !== undefined) {
+    params.push(filters.category_id);
+    conditions.push(`category_id = $${params.length}`);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const result = await pool.query(
+    `SELECT COUNT(*) FROM products ${where}`,
+    params,
+  );
   return Number(result.rows[0].count);
 }
 

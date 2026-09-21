@@ -9,12 +9,16 @@ export async function getProductById(id: number) {
   return productModel.getProductById(id);
 }
 
-export async function getAllProducts(page: number, limit: number) {
+export async function getAllProducts(
+  filters: { category_id?: number },
+  page: number,
+  limit: number,
+) {
   const offset = (page - 1) * limit;
 
   const [data, total] = await Promise.all([
-    productModel.getAllProducts(limit, offset),
-    productModel.countProducts(),
+    productModel.getAllProducts(filters, limit, offset),
+    productModel.countProducts(filters),
   ]);
 
   return {

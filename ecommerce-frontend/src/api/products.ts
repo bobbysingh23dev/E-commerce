@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { Product, Paginated } from "../types";
+import type { Product, Paginated, ProductInput } from "../types";
 
 // The columns the backend allows sorting by (must match its SORTABLE list).
 export type SortColumn = "id" | "name" | "price" | "created_at";
@@ -36,4 +36,30 @@ export function getProducts(
 // GET /products/:id — public single product (unchanged).
 export function getProduct(id: number): Promise<Product> {
   return apiFetch<Product>(`/products/${id}`);
+}
+
+// --- Admin writes (require an admin token; attached automatically) ---
+
+// POST /products
+export function createProduct(input: ProductInput): Promise<Product> {
+  return apiFetch<Product>("/products", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+// PUT /products/:id — full replace; the backend requires ALL fields.
+export function updateProduct(
+  id: number,
+  input: ProductInput,
+): Promise<Product> {
+  return apiFetch<Product>(`/products/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+// DELETE /products/:id — returns the deleted product.
+export function deleteProduct(id: number): Promise<Product> {
+  return apiFetch<Product>(`/products/${id}`, { method: "DELETE" });
 }

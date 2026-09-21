@@ -22,6 +22,21 @@ export interface Category {
   updated_at: string;
 }
 
+// Shapes for CREATING/UPDATING (what we send TO the backend). Note price is a
+// NUMBER here — reads return it as a string, but writes must send a JSON number.
+export interface ProductInput {
+  name: string;
+  description: string | null;
+  price: number;
+  stock_quantity: number;
+  category_id: number | null;
+}
+
+export interface CategoryInput {
+  name: string;
+  description: string | null;
+}
+
 export type UserRole = "customer" | "admin";
 
 export interface PublicUser {

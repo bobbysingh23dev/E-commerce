@@ -38,6 +38,16 @@ export default function Layout() {
                 different links. */}
             {user ? (
               <>
+                {/* Role-gated UI: only admins ever see this link. The backend
+                    still enforces it too — this just hides what they can't use. */}
+                {user.role === "admin" && (
+                  <Link
+                    to="/admin/products"
+                    className="font-medium text-slate-900 hover:underline"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link to="/orders" className="hover:text-slate-900">
                   Orders
                 </Link>

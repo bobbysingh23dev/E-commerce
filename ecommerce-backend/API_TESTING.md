@@ -9,15 +9,17 @@ Base URL: `http://localhost:4000`
 
 ## 👤 Test users
 
-| Email | Password | Role | Use for |
-|-------|----------|------|---------|
+| Email            | Password    | Role      | Use for                                          |
+| ---------------- | ----------- | --------- | ------------------------------------------------ |
 | `alice@test.com` | `secret123` | **admin** | creating/updating/deleting products & categories |
-| `bobby@test.com` | `secret123` | customer | testing that non-admins get `403` |
+| `bobby@test.com` | `secret123` | customer  | testing that non-admins get `403`                |
 
 > To promote a user to admin (trusted channel — never via the API):
+>
 > ```bash
 > psql -d "E-Commerce" -c "UPDATE users SET role='admin' WHERE email='alice@test.com';"
 > ```
+>
 > After promoting, the user must **log in again** to get a fresh token with the new role.
 
 ---
@@ -35,7 +37,8 @@ Tokens expire in **7 days** — if you get `401 Invalid or expired token`, just 
 
 ## 📦 Request bodies
 
-### Register — `POST /auth/register`  (public)
+### Register — `POST /auth/register` (public)
+
 ```json
 {
   "email": "charlie@test.com",
@@ -44,7 +47,8 @@ Tokens expire in **7 days** — if you get `401 Invalid or expired token`, just 
 }
 ```
 
-### Login — `POST /auth/login`  (public)
+### Login — `POST /auth/login` (public)
+
 ```json
 {
   "email": "alice@test.com",
@@ -52,7 +56,8 @@ Tokens expire in **7 days** — if you get `401 Invalid or expired token`, just 
 }
 ```
 
-### Create product — `POST /products`  (admin token required)
+### Create product — `POST /products` (admin token required)
+
 ```json
 {
   "name": "Ceramic Bowl",
@@ -62,21 +67,25 @@ Tokens expire in **7 days** — if you get `401 Invalid or expired token`, just 
   "category_id": 2
 }
 ```
+
 > `price` must be a **number** (not `"14.99"`). `category_id` must exist (see below) or be omitted.
 
-### Update product — `PUT /products/:id`  (admin token required)
+### Update product — `PUT /products/:id` (admin token required)
+
 ```json
 {
   "name": "Ceramic Bowl",
   "description": "Handmade soup bowl, 500ml",
-  "price": 16.50,
+  "price": 16.5,
   "stock_quantity": 60,
   "category_id": 2
 }
 ```
+
 > PUT is a full replace — send **all** fields.
 
-### Create category — `POST /categories`  (currently public — will be admin-locked later)
+### Create category — `POST /categories` (currently public — will be admin-locked later)
+
 ```json
 {
   "name": "Electronics",
@@ -89,10 +98,11 @@ Tokens expire in **7 days** — if you get `401 Invalid or expired token`, just 
 ## 🗂️ Reference data
 
 **Categories** (id → name):
-| id | name |
-|----|------|
-| 1 | Apparel |
-| 2 | Kitchenware |
+
+| id  | name        |
+| --- | ----------- |
+| 1   | Apparel     |
+| 2   | Kitchenware |
 
 (Run `GET /categories` for the live list.)
 
@@ -100,33 +110,33 @@ Tokens expire in **7 days** — if you get `401 Invalid or expired token`, just 
 
 ## 🛣️ Endpoints & access
 
-| Method | Path | Access |
-|--------|------|--------|
-| POST | `/auth/register` | public |
-| POST | `/auth/login` | public |
-| GET  | `/auth/me` | any logged-in user (Bearer token) |
-| GET  | `/products` | public |
-| GET  | `/products/:id` | public |
-| POST | `/products` | **admin** |
-| PUT  | `/products/:id` | **admin** |
-| DELETE | `/products/:id` | **admin** |
-| GET  | `/categories` | public |
-| GET  | `/categories/:id` | public |
-| POST | `/categories` | public (→ admin later) |
-| PUT  | `/categories/:id` | public (→ admin later) |
-| DELETE | `/categories/:id` | public (→ admin later) |
+| Method | Path              | Access                            |
+| ------ | ----------------- | --------------------------------- |
+| POST   | `/auth/register`  | public                            |
+| POST   | `/auth/login`     | public                            |
+| GET    | `/auth/me`        | any logged-in user (Bearer token) |
+| GET    | `/products`       | public                            |
+| GET    | `/products/:id`   | public                            |
+| POST   | `/products`       | **admin**                         |
+| PUT    | `/products/:id`   | **admin**                         |
+| DELETE | `/products/:id`   | **admin**                         |
+| GET    | `/categories`     | public                            |
+| GET    | `/categories/:id` | public                            |
+| POST   | `/categories`     | public (→ admin later)            |
+| PUT    | `/categories/:id` | public (→ admin later)            |
+| DELETE | `/categories/:id` | public (→ admin later)            |
 
 ---
 
 ## 🧪 Expected status codes
 
-| Situation | Status |
-|-----------|--------|
-| Success (create) | `201` |
-| Success (read/update/delete) | `200` |
-| Bad/missing input | `400` |
-| No / invalid token on a protected route | `401` |
-| Valid token but not admin | `403` |
-| Resource not found | `404` |
-| Duplicate (email / category name) | `409` |
-| Server error | `500` |
+| Situation                               | Status |
+| --------------------------------------- | ------ |
+| Success (create)                        | `201`  |
+| Success (read/update/delete)            | `200`  |
+| Bad/missing input                       | `400`  |
+| No / invalid token on a protected route | `401`  |
+| Valid token but not admin               | `403`  |
+| Resource not found                      | `404`  |
+| Duplicate (email / category name)       | `409`  |
+| Server error                            | `500`  |

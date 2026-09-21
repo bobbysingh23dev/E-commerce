@@ -11,7 +11,9 @@ async function main() {
     console.log("  err.detail     :", err.detail);
   }
 
-  console.log("\n=== Trigger 23503: reference a category_id that doesn't exist ===");
+  console.log(
+    "\n=== Trigger 23503: reference a category_id that doesn't exist ===",
+  );
   try {
     await pool.query(
       "INSERT INTO products (name, price, category_id) VALUES ('Test', 5, 99999)",

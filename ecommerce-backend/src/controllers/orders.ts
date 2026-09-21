@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import * as OrderServices from "../services/orders";
 import { NotFoundError } from "../errors/AppError";
 

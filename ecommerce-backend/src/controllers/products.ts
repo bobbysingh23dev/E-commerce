@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import * as productService from "../services/products";
-import { Product } from "../types/product";
+import type { Product } from "../types/product";
 import { NotFoundError } from "../errors/AppError";
 
 // HTTP layer: reads req, calls the service, sends res.

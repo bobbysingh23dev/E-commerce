@@ -1,5 +1,5 @@
 import { pool } from "../config/db";
-import { Category } from "../types/category";
+import type { Category } from "../types/category";
 
 export async function createCategory(
   category: Omit<Category, "id">,

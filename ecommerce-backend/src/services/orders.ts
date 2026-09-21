@@ -30,11 +30,15 @@ export const createOrder = async (user_id: number, items: OrderItemInput) => {
       const product = result.rows[0];
 
       if (!product) {
-        throw new BadRequestError(`Product with ${item.product_id} is not found`);
+        throw new BadRequestError(
+          `Product with ${item.product_id} is not found`,
+        );
       }
 
       if (product.stock_quantity < item.quantity) {
-        throw new BadRequestError(`Not enough stock for product ${item.product_id}`);
+        throw new BadRequestError(
+          `Not enough stock for product ${item.product_id}`,
+        );
       }
       const unitPrice = Number(product.price); // NUMERIC comes back as string → convert
 

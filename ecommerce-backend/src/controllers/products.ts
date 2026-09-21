@@ -18,12 +18,25 @@ export async function getAllProducts(req: Request, res: Response) {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
 
   // Only add category_id to filters when it's actually provided.
-  const filters: { category_id?: number } = {};
+  const filters: { category_id?: number; search?: string } = {};
+  const sort = {
+    column: req.query.sort as string | undefined,
+    order: req.query.order as string | undefined,
+  };
   if (req.query.category_id !== undefined) {
     filters.category_id = Number(req.query.category_id);
   }
 
-  const products = await productService.getAllProducts(filters, page, limit);
+  if (req.query.search !== undefined) {
+    filters.search = String(req.query.search);
+  }
+
+  const products = await productService.getAllProducts(
+    filters,
+    sort,
+    page,
+    limit,
+  );
   res.status(200).json(products);
 }
 

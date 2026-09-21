@@ -33,8 +33,11 @@ export async function getProductById(id: number) {
   return result.rows[0];
 }
 
+const SORTABLE = ["id", "name", "price", "created_at"];
+
 export async function getAllProducts(
-  filters: { category_id?: number },
+  filters: { category_id?: number; search?: string },
+  sort: { column?: string; order?: string },
   limit: number,
   offset: number,
 ) {
@@ -45,35 +48,44 @@ export async function getAllProducts(
     params.push(filters.category_id);
     conditions.push(`p.category_id = $${params.length}`);
   }
+  if (filters.search !== undefined) {
+    params.push(`%${filters.search}%`);
+    conditions.push(`p.name ILIKE $${params.length}`);
+  }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
   params.push(limit, offset); // pagination params come last
+
+  const sortColumn =
+    sort.column && SORTABLE.includes(sort.column) ? sort.column : "id";
+
+  const sortOrder = sort.order?.toLowerCase() === "desc" ? "DESC" : "ASC";
 
   const sql = `SELECT p.*, c.name AS category_name
      FROM products p
      LEFT JOIN categories c ON c.id = p.category_id
      ${where}
-     ORDER BY p.id
+     ORDER BY p.${sortColumn} ${sortOrder}
      LIMIT $${params.length - 1} OFFSET $${params.length}`;
-
-  // 🔍 DEBUG — watch how the query is built (remove later)
-  // console.log("🔍 filters   :", filters);
-  // console.log("🔍 conditions:", conditions);
-  // console.log("🔍 where     :", where);
-  // console.log("🔍 params    :", params);
-  // console.log("🔍 SQL       :", sql);
 
   const result = await pool.query(sql, params);
   return result.rows;
 }
 
-export async function countProducts(filters: { category_id?: number }) {
+export async function countProducts(filters: {
+  category_id?: number;
+  search?: string;
+}) {
   const conditions: string[] = [];
   const params: any[] = [];
 
   if (filters.category_id !== undefined) {
     params.push(filters.category_id);
     conditions.push(`category_id = $${params.length}`);
+  }
+  if (filters.search !== undefined) {
+    params.push(`%${filters.search}%`);
+    conditions.push(`name ILIKE $${params.length}`);
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";

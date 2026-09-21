@@ -10,14 +10,15 @@ export async function getProductById(id: number) {
 }
 
 export async function getAllProducts(
-  filters: { category_id?: number },
+  filters: { category_id?: number; search?: string },
+  sort: { column?: string; order?: string },
   page: number,
   limit: number,
 ) {
   const offset = (page - 1) * limit;
 
   const [data, total] = await Promise.all([
-    productModel.getAllProducts(filters, limit, offset),
+    productModel.getAllProducts(filters, sort, limit, offset),
     productModel.countProducts(filters),
   ]);
 

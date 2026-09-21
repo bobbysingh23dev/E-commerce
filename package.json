@@ -1,0 +1,12 @@
+{
+  "name": "ecommerce-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Monorepo root — holds the shared git hooks (Husky) for the backend & frontend.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

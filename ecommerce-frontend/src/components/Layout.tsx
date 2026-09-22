@@ -1,6 +1,7 @@
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import WelcomeBanner from "./WelcomeBanner";
 
 // A layout wraps every page with shared chrome (here: a top nav bar).
 // <Outlet /> is the placeholder React Router fills with the active route.
@@ -79,6 +80,8 @@ export default function Layout() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
+        {/* AI greeting appears here after login, above whatever page is active */}
+        <WelcomeBanner />
         <Outlet />
       </main>
     </div>

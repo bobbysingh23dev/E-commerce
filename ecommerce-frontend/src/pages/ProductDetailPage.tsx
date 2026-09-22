@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProduct } from "../api/products";
 import type { Product } from "../types";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const productId = Number(id);
   const { addItem } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -49,11 +53,21 @@ export default function ProductDetailPage() {
 
   const outOfStock = product.stock_quantity <= 0;
 
-  function handleAdd() {
+  async function handleAdd() {
     if (!product) return;
-    addItem(product);
-    setAdded(true);
-    window.setTimeout(() => setAdded(false), 1500); // brief "Added!" feedback
+    // Server cart → must be logged in. Bounce to login, then back to this page.
+    if (!user) {
+      navigate("/login", { state: { from: { pathname: `/products/${product.id}` } } });
+      return;
+    }
+    setBusy(true);
+    try {
+      await addItem(product.id);
+      setAdded(true);
+      window.setTimeout(() => setAdded(false), 1500); // brief "Added!" feedback
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -89,10 +103,18 @@ export default function ProductDetailPage() {
 
         <button
           onClick={handleAdd}
-          disabled={outOfStock}
+          disabled={outOfStock || busy}
           className="mt-6 rounded-md bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {outOfStock ? "Unavailable" : added ? "Added ✓" : "Add to cart"}
+          {outOfStock
+            ? "Unavailable"
+            : !user
+              ? "Log in to add"
+              : busy
+                ? "Adding…"
+                : added
+                  ? "Added ✓"
+                  : "Add to cart"}
         </button>
       </div>
     </div>

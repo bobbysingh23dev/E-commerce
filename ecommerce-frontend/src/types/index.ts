@@ -86,3 +86,29 @@ export interface Paginated<T> {
   data: T[];
   pagination: Pagination;
 }
+
+// ---------- Cart (server-side, per user) ----------
+// One line as GET /cart returns it — joined to products for a LIVE price.
+export interface CartItemView {
+  id: number; // cart_item row id
+  product_id: number;
+  product_name: string;
+  price: string; // live product price (string, like all NUMERIC)
+  quantity: number;
+  line_total: string; // price * quantity
+}
+
+// The whole GET /cart response.
+export interface CartView {
+  items: CartItemView[];
+  total: string;
+  itemCount: number; // backend = number of distinct lines
+}
+
+// The raw row that add/update/remove mutations return (before the join).
+export interface CartItemRow {
+  id: number;
+  cart_id: number;
+  product_id: number;
+  quantity: number;
+}

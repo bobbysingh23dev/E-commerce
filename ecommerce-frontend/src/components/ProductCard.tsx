@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import type { Product } from "../types";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 // Props are how a parent passes data INTO a component.
 interface ProductCardProps {
@@ -9,7 +11,28 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
+
   const outOfStock = product.stock_quantity <= 0;
+
+  async function handleAdd() {
+    // The cart lives on the server now, so you must be logged in to add.
+    if (!user) {
+      navigate("/login", { state: { from: { pathname: "/" } } });
+      return;
+    }
+    setBusy(true);
+    try {
+      await addItem(product.id);
+      setAdded(true);
+      window.setTimeout(() => setAdded(false), 1200);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="flex flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
@@ -44,11 +67,19 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       <button
-        onClick={() => addItem(product)}
-        disabled={outOfStock}
+        onClick={handleAdd}
+        disabled={outOfStock || busy}
         className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {outOfStock ? "Unavailable" : "Add to cart"}
+        {outOfStock
+          ? "Unavailable"
+          : !user
+            ? "Log in to add"
+            : busy
+              ? "Adding…"
+              : added
+                ? "Added ✓"
+                : "Add to cart"}
       </button>
     </div>
   );

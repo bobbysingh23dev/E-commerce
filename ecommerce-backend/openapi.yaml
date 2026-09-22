@@ -26,6 +26,8 @@ tags:
     description: Product categories
   - name: Orders
     description: Customer orders (all routes require login)
+  - name: Cart
+    description: The logged-in user's shopping cart (all routes require login)
 
 components:
   securitySchemes:
@@ -202,6 +204,47 @@ components:
             enum: [pending, paid, completed, cancelled],
             example: "cancelled",
           }
+
+    # ---------- Cart ----------
+    AddCartItemInput:
+      type: object
+      required: [product_id, quantity]
+      properties:
+        product_id: { type: integer, example: 1 }
+        quantity: { type: integer, minimum: 1, example: 2 }
+    QuantityInput:
+      type: object
+      required: [quantity]
+      properties:
+        quantity: { type: integer, minimum: 1, example: 3 }
+    CartItemRow:
+      type: object
+      description: A raw cart_items row (returned by add / update / remove).
+      properties:
+        id: { type: integer, example: 1 }
+        cart_id: { type: integer, example: 1 }
+        product_id: { type: integer, example: 1 }
+        quantity: { type: integer, example: 3 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CartLine:
+      type: object
+      description: A cart item joined to its product (live price + line total).
+      properties:
+        id: { type: integer, example: 1 }
+        product_id: { type: integer, example: 1 }
+        product_name: { type: string, example: "T-shirt" }
+        price: { type: string, example: "19.99" }
+        quantity: { type: integer, example: 3 }
+        line_total: { type: string, example: "59.97" }
+    CartResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CartLine" }
+        total: { type: string, example: "59.97" }
+        itemCount: { type: integer, example: 1 }
 
 paths:
   # ==================== AUTH ====================
@@ -634,3 +677,141 @@ paths:
           }
         "401": { description: No/invalid token }
         "404": { description: Not found (or not yours) }
+
+  # ==================== CART ====================
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get the logged-in user's cart with live prices and a computed total
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          {
+            description: OK,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/CartResponse" } },
+              },
+          }
+        "401": { description: No/invalid token }
+    delete:
+      tags: [Cart]
+      summary: Empty the cart (remove all items)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Cart cleared" }
+        "401": { description: No/invalid token }
+
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add a product to the cart (re-adding the same product accumulates its quantity)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddCartItemInput" }
+      responses:
+        "201":
+          {
+            description: Added (returns the cart row),
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/CartItemRow" } },
+              },
+          }
+        "400":
+          {
+            description: Validation failed,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/ValidationError" } },
+              },
+          }
+        "401": { description: No/invalid token }
+        "404": { description: Product not found }
+
+  /cart/items/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The product's id (a cart line is keyed by product)
+        schema: { type: integer }
+    patch:
+      tags: [Cart]
+      summary: Set an exact quantity for a product already in the cart
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuantityInput" }
+      responses:
+        "200":
+          {
+            description: OK,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/CartItemRow" } },
+              },
+          }
+        "400": { description: Invalid id or quantity }
+        "401": { description: No/invalid token }
+        "404": { description: That product is not in your cart }
+    delete:
+      tags: [Cart]
+      summary: Remove one product from the cart
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          {
+            description: Removed (returns the removed row),
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/CartItemRow" } },
+              },
+          }
+        "400": { description: Invalid id }
+        "401": { description: No/invalid token }
+        "404": { description: That product is not in your cart }
+
+  /cart/checkout:
+    post:
+      tags: [Cart]
+      summary: Convert the cart into an order (transaction) and empty it
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201":
+          description: Order placed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    { type: string, example: "Order placed successfully" }
+                  order: { $ref: "#/components/schemas/OrderSummary" }
+        "400":
+          {
+            description: Cart is empty or not enough stock,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/Error" } },
+              },
+          }
+        "401": { description: No/invalid token }

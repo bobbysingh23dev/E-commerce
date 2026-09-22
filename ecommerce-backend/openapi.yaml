@@ -206,17 +206,14 @@ components:
           }
 
     # ---------- Cart ----------
+    # NOTE: AddCartItemInput & QuantityInput are GENERATED from Zod at runtime
+    # (src/openapi.ts + src/schemas/cart.ts). Edit the Zod schema, not here.
     AddCartItemInput:
       type: object
-      required: [product_id, quantity]
-      properties:
-        product_id: { type: integer, example: 1 }
-        quantity: { type: integer, minimum: 1, example: 2 }
+      description: "(generated from Zod at runtime — placeholder for standalone YAML readers)"
     QuantityInput:
       type: object
-      required: [quantity]
-      properties:
-        quantity: { type: integer, minimum: 1, example: 3 }
+      description: "(generated from Zod at runtime — placeholder for standalone YAML readers)"
     CartItemRow:
       type: object
       description: A raw cart_items row (returned by add / update / remove).

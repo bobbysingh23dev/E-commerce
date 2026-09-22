@@ -1,11 +1,10 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
 import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
+import { openapiDocument } from "./openapi";
 
 dotenv.config();
 
@@ -18,10 +17,9 @@ app.use(cors());
 app.use(express.json());
 
 // ---- API docs (Swagger UI) ----
-// Loaded relative to the working directory so it works under `npm run dev`,
-// the compiled build, AND the test runner.
-const swaggerDocument = YAML.load(path.join(process.cwd(), "openapi.yaml"));
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// openapiDocument = the hand-written openapi.yaml with the cart input schemas
+// generated from Zod (see src/openapi.ts). Change a Zod schema → docs update.
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
 // ---- Routes ----
 app.use("/", routes);

@@ -2,10 +2,9 @@ import { Router } from "express";
 import * as cartController from "../controllers/carts";
 import { authenticate } from "../middlewares/authenticate";
 import { validateId } from "../middlewares/validateId";
-import {
-  validateAddItemBody,
-  validateQuantityBody,
-} from "../middlewares/validateCartBody";
+import { validate } from "../middlewares/validate";
+
+import { addCartItemSchema, quantitySchema } from "../schemas/cart";
 
 const cartRouter = Router();
 
@@ -13,11 +12,15 @@ const cartRouter = Router();
 cartRouter.use(authenticate);
 
 cartRouter.get("/", cartController.getCart);
-cartRouter.post("/items", validateAddItemBody, cartController.addToCart);
+cartRouter.post(
+  "/items",
+  validate(addCartItemSchema),
+  cartController.addToCart,
+);
 cartRouter.patch(
   "/items/:id",
   validateId,
-  validateQuantityBody,
+  validate(quantitySchema),
   cartController.updateItem,
 );
 cartRouter.delete("/items/:id", validateId, cartController.removeItem);

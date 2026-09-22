@@ -34,7 +34,8 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0",
     "swagger-ui-express": "^5.0.1",
-    "yamljs": "^0.3.0"
+    "yamljs": "^0.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",

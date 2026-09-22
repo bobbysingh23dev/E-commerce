@@ -11,7 +11,7 @@ export default function WelcomeBanner() {
   return (
     <div
       role="status"
-      className="mb-6 flex items-start gap-3 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-4 shadow-sm"
+      className="mb-6 flex items-start gap-3 rounded-xl border border-indigo-100 bg-linear-to-r from-indigo-50 via-purple-50 to-pink-50 p-4 shadow-sm"
     >
       <span className="text-xl leading-none" aria-hidden>
         ✨

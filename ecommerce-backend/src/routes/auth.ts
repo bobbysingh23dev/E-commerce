@@ -17,5 +17,6 @@ authRouter.post(
   validate(refreshSchema),
   authController.refreshToken,
 );
+authRouter.post("/logout", validate(refreshSchema), authController.logout);
 
 export default authRouter;

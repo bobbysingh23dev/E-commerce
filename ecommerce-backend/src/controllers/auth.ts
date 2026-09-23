@@ -27,3 +27,9 @@ export async function refreshToken(req: Request, res: Response) {
   if (!result) throw new UnauthorizedError("Invalid or expired refresh token");
   res.status(200).json(result);
 }
+
+export async function logout(req: Request, res: Response) {
+  const { refreshToken } = req.body;
+  await authService.logout(refreshToken);
+  res.status(200).json({ message: "Logged out" });
+}

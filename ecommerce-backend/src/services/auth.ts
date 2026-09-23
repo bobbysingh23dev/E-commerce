@@ -83,3 +83,8 @@ export const refreshAccessToken = async (refreshToken: string) => {
   );
   return { jwtToken };
 };
+
+export async function logout(refreshToken: string) {
+  // Revoke = delete the row. That refresh token can never mint tokens again.
+  await refreshTokenModel.deleteRefreshToken(hashToken(refreshToken));
+}

@@ -157,6 +157,35 @@
   animation: reveal-up 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
 }
 
+/* Editorial marquee ticker. Track holds the content twice; -50% loops seamlessly. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 24s linear infinite;
+}
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+}
+
 /* Toast slide-in. */
 @keyframes toast-in {
   from {
@@ -220,5 +249,8 @@
   }
   .aurora-blob {
     animation: none !important;
+  }
+  .marquee-track {
+    animation: none;
   }
 }

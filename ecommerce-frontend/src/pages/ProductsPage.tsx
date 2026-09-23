@@ -4,6 +4,7 @@ import { getCategories } from "../api/categories";
 import type { Product, Category, Pagination as PaginationInfo } from "../types";
 import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
+import Marquee from "../components/Marquee";
 import { useDebounce } from "../hooks/useDebounce";
 
 const PAGE_SIZE = 9;
@@ -98,6 +99,11 @@ export default function ProductsPage() {
           </div>
         </div>
       </section>
+
+      {/* ---- Editorial brand ticker ---- */}
+      <div className="mb-8">
+        <Marquee />
+      </div>
 
       {/* ---- Control bar ---- */}
       <div className="card mb-6 flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center">

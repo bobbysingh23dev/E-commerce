@@ -11,7 +11,6 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     let ignore = false;
-    // Admin table: grab a big page. (A real admin UI would paginate too.)
     getProducts({ limit: 100, sort: "id", order: "asc" })
       .then((res) => {
         if (!ignore) setProducts(res.data);
@@ -32,7 +31,6 @@ export default function AdminProductsPage() {
       return;
     try {
       await deleteProduct(product.id);
-      // Remove it from the list without refetching (immutable filter).
       setProducts((prev) => prev.filter((p) => p.id !== product.id));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Delete failed");
@@ -43,61 +41,50 @@ export default function AdminProductsPage() {
     <div>
       <AdminNav />
 
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Manage products</h1>
-        <Link
-          to="/admin/products/new"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-        >
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Manage products</h1>
+        <Link to="/admin/products/new" className="btn-primary">
           + New product
         </Link>
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert-error mb-4">{error}</div>}
 
       {loading ? (
-        <p className="text-slate-500">Loading…</p>
+        <p className="text-muted">Loading…</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <div className="card overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-slate-500">
+            <thead className="border-b border-line text-xs uppercase tracking-wider text-faint">
               <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Category</th>
-                <th className="px-4 py-2 text-right font-medium">Price</th>
-                <th className="px-4 py-2 text-right font-medium">Stock</th>
-                <th className="px-4 py-2 text-right font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 text-right font-medium">Price</th>
+                <th className="px-4 py-3 text-right font-medium">Stock</th>
+                <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line">
               {products.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-2 font-medium text-slate-900">
-                    {p.name}
-                  </td>
-                  <td className="px-4 py-2 text-slate-500">
+                <tr key={p.id} className="transition hover:bg-white/5">
+                  <td className="px-4 py-3 font-medium text-fg">{p.name}</td>
+                  <td className="px-4 py-3 text-muted">
                     {p.category_name ?? "—"}
                   </td>
-                  <td className="px-4 py-2 text-right text-slate-900">
-                    ${p.price}
-                  </td>
-                  <td className="px-4 py-2 text-right text-slate-900">
+                  <td className="px-4 py-3 text-right text-fg">${p.price}</td>
+                  <td className="px-4 py-3 text-right text-fg">
                     {p.stock_quantity}
                   </td>
-                  <td className="px-4 py-2 text-right">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     <Link
                       to={`/admin/products/${p.id}/edit`}
-                      className="text-slate-700 hover:underline"
+                      className="text-accent-3 hover:underline"
                     >
                       Edit
                     </Link>
                     <button
                       onClick={() => handleDelete(p)}
-                      className="ml-3 text-red-600 hover:underline"
+                      className="ml-4 text-red-400 hover:underline"
                     >
                       Delete
                     </button>

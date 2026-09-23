@@ -8,8 +8,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Where to go after a successful login: back where ProtectedRoute sent us
-  // from, or home. (See ProtectedRoute — it puts the URL in location.state.)
   const from =
     (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/";
 
@@ -19,14 +17,13 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault(); // stop the browser's default full-page form submit
+    e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      // ApiError.message carries the backend's "Invalid email or password".
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setSubmitting(false);
@@ -34,46 +31,49 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">Log in</h1>
+    <div className="mx-auto mt-8 max-w-sm">
+      <div className="card p-7 shadow-[0_30px_80px_-40px_rgba(139,92,246,0.5)]">
+        <h1 className="text-2xl font-bold">
+          Welcome <span className="gradient-text">back</span>
+        </h1>
+        <p className="mt-1 mb-6 text-sm text-muted">
+          Log in to your account to continue.
+        </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div className="alert-error">{error}</div>}
 
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={setEmail}
-          required
-          autoComplete="email"
-        />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          required
-          autoComplete="current-password"
-        />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            required
+            autoComplete="email"
+          />
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            required
+            autoComplete="current-password"
+          />
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {submitting ? "Logging in…" : "Log in"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-primary w-full py-2.5"
+          >
+            {submitting ? "Logging in…" : "Log in"}
+          </button>
+        </form>
+      </div>
 
-      <p className="mt-4 text-sm text-slate-600">
+      <p className="mt-5 text-center text-sm text-muted">
         No account?{" "}
-        <Link to="/register" className="font-medium text-slate-900 underline">
-          Register
+        <Link to="/register" className="font-medium text-accent-3 hover:underline">
+          Create one
         </Link>
       </p>
     </div>

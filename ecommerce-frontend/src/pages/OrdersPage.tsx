@@ -26,48 +26,43 @@ export default function OrdersPage() {
     };
   }, []);
 
-  if (loading) return <p className="text-slate-500">Loading orders…</p>;
-
-  if (error) {
-    return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
-        {error}
-      </div>
-    );
-  }
+  if (loading) return <p className="text-muted">Loading orders…</p>;
+  if (error) return <div className="alert-error">{error}</div>;
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">My orders</h1>
+    <div className="mx-auto max-w-3xl">
+      <h1 className="mb-6 text-3xl font-bold">My orders</h1>
 
       {orders.length === 0 ? (
-        <p className="text-slate-500">
+        <p className="text-muted">
           You haven&apos;t placed any orders yet.{" "}
-          <Link to="/" className="font-medium text-slate-900 underline">
+          <Link to="/" className="font-medium text-accent-3 hover:underline">
             Start shopping
           </Link>
           .
         </p>
       ) : (
-        <div className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="space-y-3">
           {orders.map((order) => (
-            // The whole row is a link to the order's detail page.
             <Link
               key={order.id}
               to={`/orders/${order.id}`}
-              className="flex items-center justify-between px-4 py-3 hover:bg-slate-50"
+              className="card flex items-center justify-between p-4 transition-all hover:-translate-y-0.5 hover:border-accent/40"
             >
               <div>
-                <p className="font-medium text-slate-900">Order #{order.id}</p>
-                <p className="text-sm text-slate-500">
-                  {new Date(order.created_at).toLocaleDateString()}
+                <p className="font-semibold text-fg">Order #{order.id}</p>
+                <p className="text-sm text-faint">
+                  {new Date(order.created_at).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </p>
               </div>
               <div className="flex items-center gap-4">
                 <StatusBadge status={order.status} />
-                <span className="font-semibold text-slate-900">
-                  ${order.total}
-                </span>
+                <span className="font-semibold text-fg">${order.total}</span>
+                <span className="text-muted">›</span>
               </div>
             </Link>
           ))}

@@ -16,7 +16,6 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state. editingId === null means "create"; a number means "editing that one".
   const [editingId, setEditingId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -42,14 +41,11 @@ export default function AdminCategoriesPage() {
   async function startEdit(category: Category) {
     setEditingId(category.id);
     setError(null);
-    // Fetch the freshest copy (GET /categories/:id) before editing, in case
-    // someone else changed it since the list was loaded.
     try {
       const fresh = await getCategory(category.id);
       setName(fresh.name);
       setDescription(fresh.description ?? "");
     } catch {
-      // Fall back to the row data we already have.
       setName(category.name);
       setDescription(category.description ?? "");
     }
@@ -64,15 +60,11 @@ export default function AdminCategoriesPage() {
       description: description.trim() === "" ? null : description.trim(),
     };
     try {
-      if (editingId !== null) {
-        await updateCategory(editingId, input);
-      } else {
-        await createCategory(input);
-      }
+      if (editingId !== null) await updateCategory(editingId, input);
+      else await createCategory(input);
       await refresh();
       resetForm();
     } catch (err) {
-      // e.g. 409 if the name already exists.
       setError(err instanceof ApiError ? err.message : "Save failed");
     } finally {
       setSubmitting(false);
@@ -93,24 +85,14 @@ export default function AdminCategoriesPage() {
   return (
     <div>
       <AdminNav />
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">
-        Manage categories
-      </h1>
+      <h1 className="mb-5 text-2xl font-bold">Manage categories</h1>
 
-      {/* Create / edit form */}
-      <form
-        onSubmit={handleSubmit}
-        className="mb-6 max-w-lg space-y-3 rounded-lg border border-slate-200 bg-white p-4"
-      >
-        <p className="text-sm font-medium text-slate-700">
+      <form onSubmit={handleSubmit} className="card mb-6 max-w-lg space-y-3 p-5">
+        <p className="text-sm font-semibold text-muted">
           {editingId !== null ? "Edit category" : "Add a category"}
         </p>
 
-        {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        {error && <div className="alert-error">{error}</div>}
 
         <TextField label="Name" value={name} onChange={setName} required />
         <TextField
@@ -119,12 +101,8 @@ export default function AdminCategoriesPage() {
           onChange={setDescription}
         />
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-          >
+        <div className="flex gap-3 pt-1">
+          <button type="submit" disabled={submitting} className="btn-primary">
             {submitting
               ? "Saving…"
               : editingId !== null
@@ -132,45 +110,37 @@ export default function AdminCategoriesPage() {
                 : "Add category"}
           </button>
           {editingId !== null && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
+            <button type="button" onClick={resetForm} className="btn-ghost">
               Cancel
             </button>
           )}
         </div>
       </form>
 
-      {/* List */}
       {loading ? (
-        <p className="text-slate-500">Loading…</p>
+        <p className="text-muted">Loading…</p>
       ) : categories.length === 0 ? (
-        <p className="text-slate-500">No categories yet.</p>
+        <p className="text-muted">No categories yet.</p>
       ) : (
-        <div className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="card divide-y divide-line">
           {categories.map((c) => (
-            <div
-              key={c.id}
-              className="flex items-center justify-between px-4 py-3"
-            >
+            <div key={c.id} className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium text-slate-900">{c.name}</p>
+                <p className="font-semibold text-fg">{c.name}</p>
                 {c.description && (
-                  <p className="text-sm text-slate-500">{c.description}</p>
+                  <p className="text-sm text-muted">{c.description}</p>
                 )}
               </div>
-              <div className="flex gap-3 text-sm">
+              <div className="flex gap-4 text-sm">
                 <button
                   onClick={() => startEdit(c)}
-                  className="text-slate-700 hover:underline"
+                  className="text-accent-3 hover:underline"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(c)}
-                  className="text-red-600 hover:underline"
+                  className="text-red-400 hover:underline"
                 >
                   Delete
                 </button>

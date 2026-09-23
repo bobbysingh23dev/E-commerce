@@ -18,10 +18,9 @@ export default function RegisterPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await register(name, email, password); // registers, then auto-logs-in
+      await register(name, email, password);
       navigate("/", { replace: true });
     } catch (err) {
-      // Could be a 400 (validation) or 409 (email already exists).
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setSubmitting(false);
@@ -29,56 +28,57 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">
-        Create an account
-      </h1>
+    <div className="mx-auto mt-8 max-w-sm">
+      <div className="card p-7 shadow-[0_30px_80px_-40px_rgba(139,92,246,0.5)]">
+        <h1 className="text-2xl font-bold">
+          Join <span className="gradient-text">Bobby&apos;s Shop</span>
+        </h1>
+        <p className="mt-1 mb-6 text-sm text-muted">
+          Create an account — it takes ten seconds.
+        </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div className="alert-error">{error}</div>}
 
-        <TextField
-          label="Name"
-          value={name}
-          onChange={setName}
-          required
-          autoComplete="name"
-        />
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={setEmail}
-          required
-          autoComplete="email"
-        />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          required
-          minLength={6}
-          autoComplete="new-password"
-          placeholder="At least 6 characters"
-        />
+          <TextField
+            label="Name"
+            value={name}
+            onChange={setName}
+            required
+            autoComplete="name"
+          />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            required
+            autoComplete="email"
+          />
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            required
+            minLength={6}
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+          />
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {submitting ? "Creating account…" : "Register"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-primary w-full py-2.5"
+          >
+            {submitting ? "Creating account…" : "Create account"}
+          </button>
+        </form>
+      </div>
 
-      <p className="mt-4 text-sm text-slate-600">
+      <p className="mt-5 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link to="/login" className="font-medium text-slate-900 underline">
+        <Link to="/login" className="font-medium text-accent-3 hover:underline">
           Log in
         </Link>
       </p>

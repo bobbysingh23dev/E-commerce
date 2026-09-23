@@ -6,43 +6,36 @@ import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
 import { useDebounce } from "../hooks/useDebounce";
 
-const PAGE_SIZE = 9; // 3 x 3 grid on desktop
+const PAGE_SIZE = 9;
 
 export default function ProductsPage() {
-  // --- The "query": everything that shapes which products we ask for. ---
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 400); // wait for typing to pause
-  const [categoryId, setCategoryId] = useState(""); // "" = all categories
+  const debouncedSearch = useDebounce(search, 400);
+  const [categoryId, setCategoryId] = useState("");
   const [sort, setSort] = useState<SortColumn>("name");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
 
-  // --- The data we get back. ---
   const [products, setProducts] = useState<Product[]>([]);
   const [pageInfo, setPageInfo] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Categories for the filter dropdown (fetched once on mount). ---
   const [categories, setCategories] = useState<Category[]>([]);
   useEffect(() => {
     getCategories()
       .then(setCategories)
-      .catch(() => setCategories([])); // dropdown just stays empty on failure
+      .catch(() => setCategories([]));
   }, []);
 
-  // --- Fetch products whenever any part of the query changes. ---
-  // The dependency array lists every query input, so React re-runs this the
-  // moment the user searches, filters, sorts, or changes page.
   useEffect(() => {
     let ignore = false;
     setLoading(true);
     setError(null);
-
     getProducts({
       page,
       limit: PAGE_SIZE,
-      search: debouncedSearch || undefined, // omit empty search
+      search: debouncedSearch || undefined,
       category_id: categoryId ? Number(categoryId) : undefined,
       sort,
       order,
@@ -58,35 +51,49 @@ export default function ProductsPage() {
       .finally(() => {
         if (!ignore) setLoading(false);
       });
-
     return () => {
       ignore = true;
     };
   }, [debouncedSearch, categoryId, sort, order, page]);
 
-  // When a filter/sort changes, jump back to page 1 — otherwise you might be
-  // on "page 5" of a result set that now only has 2 pages. (setPage(1) is a
-  // no-op if we're already on page 1, so it won't cause an extra fetch.)
   function backToFirstPage() {
     setPage(1);
   }
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">Products</h1>
+      {/* ---- Hero ---- */}
+      <section className="relative mb-10 overflow-hidden rounded-3xl border border-line bg-surface/60 px-6 py-14 text-center sm:py-20">
+        {/* soft inner glow */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_120%_at_50%_-10%,rgba(139,92,246,0.25),transparent_70%)]" />
+        <div className="relative">
+          <span className="chip mb-5">✦ New season, new arrivals</span>
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
+            Discover things <br className="hidden sm:block" />
+            you&apos;ll <span className="gradient-text">actually love</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base text-muted sm:text-lg">
+            A hand-picked catalog with a checkout that just works. Search, sort,
+            and fill your cart in seconds.
+          </p>
+        </div>
+      </section>
 
-      {/* --- Toolbar --- */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            backToFirstPage();
-          }}
-          placeholder="Search by name…"
-          className="w-full flex-1 rounded-md border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 sm:w-auto"
-        />
+      {/* ---- Control bar ---- */}
+      <div className="card mb-6 flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative flex-1">
+          <SearchIcon />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              backToFirstPage();
+            }}
+            placeholder="Search products…"
+            className="input pl-10"
+          />
+        </div>
 
         <select
           value={categoryId}
@@ -94,7 +101,7 @@ export default function ProductsPage() {
             setCategoryId(e.target.value);
             backToFirstPage();
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-slate-900"
+          className="input cursor-pointer sm:w-auto"
         >
           <option value="">All categories</option>
           {categories.map((c) => (
@@ -110,11 +117,11 @@ export default function ProductsPage() {
             setSort(e.target.value as SortColumn);
             backToFirstPage();
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-slate-900"
+          className="input cursor-pointer sm:w-auto"
         >
           <option value="name">Sort: Name</option>
           <option value="price">Sort: Price</option>
-          <option value="created_at">Sort: Date added</option>
+          <option value="created_at">Sort: Newest</option>
         </select>
 
         <button
@@ -122,34 +129,34 @@ export default function ProductsPage() {
             setOrder((o) => (o === "asc" ? "desc" : "asc"));
             backToFirstPage();
           }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          className="btn-ghost sm:w-auto"
         >
           {order === "asc" ? "↑ Ascending" : "↓ Descending"}
         </button>
       </div>
 
-      {/* --- Results --- */}
+      {/* ---- Results ---- */}
       {loading ? (
-        <p className="text-slate-500">Loading products…</p>
+        <SkeletonGrid />
       ) : error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
+        <div className="alert-error">
           <p className="font-medium">Couldn&apos;t load products</p>
-          <p className="text-sm">{error}</p>
+          <p>{error}</p>
         </div>
       ) : products.length === 0 ? (
-        <p className="text-slate-500">No products match your filters.</p>
+        <p className="py-16 text-center text-muted">
+          No products match your filters.
+        </p>
       ) : (
         <>
-          <p className="mb-3 text-sm text-slate-500">
-            {pageInfo?.total} product{pageInfo?.total === 1 ? "" : "s"} found
+          <p className="mb-4 text-sm text-faint">
+            {pageInfo?.total} product{pageInfo?.total === 1 ? "" : "s"}
           </p>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-
           <Pagination
             page={page}
             totalPages={pageInfo?.totalPages ?? 1}
@@ -157,6 +164,45 @@ export default function ProductsPage() {
           />
         </>
       )}
+    </div>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-faint"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
+// A shimmering placeholder grid while products load — feels far more premium
+// than a bare "Loading…" line.
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="card overflow-hidden">
+          <div className="h-40 animate-pulse bg-white/5" />
+          <div className="space-y-3 p-4">
+            <div className="h-4 w-2/3 animate-pulse rounded bg-white/5" />
+            <div className="h-3 w-full animate-pulse rounded bg-white/5" />
+            <div className="h-6 w-1/3 animate-pulse rounded bg-white/5" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

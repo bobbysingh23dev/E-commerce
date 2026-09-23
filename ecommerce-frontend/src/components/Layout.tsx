@@ -1,77 +1,78 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import WelcomeBanner from "./WelcomeBanner";
 
-// A layout wraps every page with shared chrome (here: a top nav bar).
-// <Outlet /> is the placeholder React Router fills with the active route.
+// Nav links share this style; NavLink gives us an active state for free.
+const navLink = ({ isActive }: { isActive: boolean }) =>
+  isActive ? "text-fg" : "link-muted";
+
 export default function Layout() {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          {/* Link renders an <a> but navigates WITHOUT a full page reload. */}
-          <Link to="/" className="text-xl font-bold text-slate-900">
-            Bobby&apos;s Shop
+    <div className="flex min-h-screen flex-col">
+      {/* ---- Sticky frosted nav ---- */}
+      <header className="glass sticky top-0 z-50 border-b border-line">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
+          {/* Wordmark: a glowing gradient mark + gradient text */}
+          <Link to="/" className="group flex items-center gap-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-linear-to-br from-accent to-accent-2 text-sm font-bold text-white shadow-[0_6px_18px_-4px_rgba(124,92,246,0.8)] transition-transform group-hover:scale-105">
+              B
+            </span>
+            <span className="font-display text-lg font-bold tracking-tight">
+              Bobby&apos;s <span className="gradient-text">Shop</span>
+            </span>
           </Link>
 
-          <div className="flex items-center gap-4 text-sm text-slate-600">
-            <Link to="/" className="hover:text-slate-900">
-              Products
-            </Link>
+          <div className="flex items-center gap-5 text-sm">
+            <NavLink to="/" end className={navLink}>
+              Shop
+            </NavLink>
 
-            {/* Cart link with a badge. itemCount comes from the cart context,
-                so this number updates the instant an item is added anywhere. */}
-            <Link to="/cart" className="relative hover:text-slate-900">
+            {user?.role === "admin" && (
+              <NavLink to="/admin/products" className={navLink}>
+                Admin
+              </NavLink>
+            )}
+
+            {user && (
+              <NavLink to="/orders" className={navLink}>
+                Orders
+              </NavLink>
+            )}
+
+            {/* Cart pill with a live glowing badge */}
+            <Link
+              to="/cart"
+              className="relative flex items-center gap-1.5 rounded-full border border-line bg-white/5 px-3.5 py-1.5 font-medium text-fg transition hover:bg-white/10"
+            >
+              <BagIcon />
               Cart
               {itemCount > 0 && (
-                <span className="ml-1 rounded-full bg-slate-900 px-1.5 py-0.5 text-xs font-medium text-white">
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-linear-to-br from-accent to-accent-2 px-1 text-xs font-bold text-white shadow-[0_0_12px_rgba(139,92,246,0.8)]">
                   {itemCount}
                 </span>
               )}
             </Link>
 
-            {/* The nav re-renders automatically when `user` changes, because
-                it reads from the auth context. Logged in vs out shows
-                different links. */}
             {user ? (
               <>
-                {/* Role-gated UI: only admins ever see this link. The backend
-                    still enforces it too — this just hides what they can't use. */}
-                {user.role === "admin" && (
-                  <Link
-                    to="/admin/products"
-                    className="font-medium text-slate-900 hover:underline"
-                  >
-                    Admin
-                  </Link>
-                )}
-                <Link to="/orders" className="hover:text-slate-900">
-                  Orders
-                </Link>
-                <Link to="/account" className="hover:text-slate-900">
-                  {user.name}
-                </Link>
-                <button
-                  onClick={logout}
-                  className="text-slate-500 hover:text-slate-900"
-                >
+                <NavLink to="/account" className={navLink}>
+                  {user.name.split(" ")[0]}
+                </NavLink>
+                <button onClick={logout} className="link-muted">
                   Log out
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="hover:text-slate-900">
+                <NavLink to="/login" className={navLink}>
                   Log in
-                </Link>
-                <Link
-                  to="/register"
-                  className="rounded-md bg-slate-900 px-3 py-1.5 font-medium text-white hover:bg-slate-700"
-                >
-                  Register
+                </NavLink>
+                <Link to="/register" className="btn-primary px-4 py-2">
+                  Sign up
                 </Link>
               </>
             )}
@@ -79,11 +80,41 @@ export default function Layout() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
-        {/* AI greeting appears here after login, above whatever page is active */}
+      {/* ---- Page content ---- */}
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
         <WelcomeBanner />
         <Outlet />
       </main>
+
+      {/* ---- Footer ---- */}
+      <footer className="mt-12 border-t border-line">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-8 text-sm text-faint sm:flex-row">
+          <span className="font-display font-semibold text-muted">
+            Bobby&apos;s <span className="gradient-text">Shop</span>
+          </span>
+          <span>Crafted with care · {new Date().getFullYear()}</span>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+function BagIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+      <path d="M3 6h18" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
   );
 }

@@ -5,7 +5,6 @@ import type { OrderDetail } from "../types";
 import StatusBadge from "../components/StatusBadge";
 
 export default function OrderDetailPage() {
-  // useParams reads the ":id" segment from the URL (it's always a string).
   const { id } = useParams<{ id: string }>();
   const orderId = Number(id);
 
@@ -30,18 +29,16 @@ export default function OrderDetailPage() {
     return () => {
       ignore = true;
     };
-  }, [orderId]); // refetch if the id in the URL changes
+  }, [orderId]);
 
   async function handleCancel() {
     if (!order) return;
     if (!window.confirm(`Cancel order #${order.id}? This restocks the items.`))
       return;
-
     setCancelling(true);
     setError(null);
     try {
       const updated = await updateOrderStatus(order.id, "cancelled");
-      // PATCH returns the summary; keep our items, just update the status.
       setOrder({ ...order, status: updated.status });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't cancel order");
@@ -50,15 +47,13 @@ export default function OrderDetailPage() {
     }
   }
 
-  if (loading) return <p className="text-slate-500">Loading order…</p>;
+  if (loading) return <p className="text-muted">Loading order…</p>;
 
   if (error && !order) {
     return (
-      <div>
-        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
-          {error}
-        </div>
-        <Link to="/orders" className="mt-4 inline-block text-sm underline">
+      <div className="mx-auto max-w-2xl">
+        <div className="alert-error">{error}</div>
+        <Link to="/orders" className="mt-4 inline-block link-muted text-sm">
           ← Back to orders
         </Link>
       </div>
@@ -67,66 +62,52 @@ export default function OrderDetailPage() {
 
   if (!order) return null;
 
-  // Only offer cancellation for orders that haven't shipped/finished.
   const canCancel = order.status === "pending" || order.status === "paid";
 
   return (
-    <div>
-      <Link
-        to="/orders"
-        className="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900"
-      >
+    <div className="mx-auto max-w-2xl">
+      <Link to="/orders" className="mb-4 inline-block link-muted text-sm">
         ← Back to orders
       </Link>
 
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Order #{order.id}
-        </h1>
+      <div className="mb-2 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Order #{order.id}</h1>
         <StatusBadge status={order.status} />
       </div>
-
-      <p className="mb-4 text-sm text-slate-500">
+      <p className="mb-6 text-sm text-faint">
         Placed {new Date(order.created_at).toLocaleString()}
       </p>
 
-      {/* An inline error (e.g. cancel failed) while the order is still shown. */}
-      {error && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert-error mb-4">{error}</div>}
 
-      {/* Line items */}
-      <div className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="card divide-y divide-line">
         {order.items.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between px-4 py-3"
-          >
+          <div key={item.id} className="flex items-center justify-between p-4">
             <div>
-              <p className="font-medium text-slate-900">{item.product_name}</p>
-              <p className="text-sm text-slate-500">
+              <p className="font-semibold text-fg">{item.product_name}</p>
+              <p className="text-sm text-muted">
                 {item.quantity} × ${item.unit_price}
               </p>
             </div>
-            <span className="font-medium text-slate-900">
+            <span className="font-medium text-fg">
               ${(Number(item.unit_price) * item.quantity).toFixed(2)}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-        <span className="text-lg font-semibold text-slate-900">Total</span>
-        <span className="text-lg font-bold text-slate-900">${order.total}</span>
+      <div className="card mt-4 flex items-center justify-between p-5">
+        <span className="text-lg font-semibold text-muted">Total</span>
+        <span className="gradient-text font-display text-2xl font-bold">
+          ${order.total}
+        </span>
       </div>
 
       {canCancel && (
         <button
           onClick={handleCancel}
           disabled={cancelling}
-          className="mt-6 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+          className="btn-danger mt-6"
         >
           {cancelling ? "Cancelling…" : "Cancel order"}
         </button>

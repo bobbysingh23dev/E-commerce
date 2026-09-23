@@ -11,21 +11,19 @@ export default function WelcomeBanner() {
   return (
     <div
       role="status"
-      className="mb-6 flex items-start gap-3 rounded-xl border border-indigo-100 bg-linear-to-r from-indigo-50 via-purple-50 to-pink-50 p-4 shadow-sm"
+      className="mb-8 flex items-start gap-3 rounded-2xl border border-accent/30 bg-linear-to-r from-accent/10 via-accent-2/10 to-transparent p-4 shadow-[0_10px_40px_-16px_rgba(139,92,246,0.6)]"
     >
       <span className="text-xl leading-none" aria-hidden>
         ✨
       </span>
 
-      <p className="flex-1 text-sm leading-relaxed text-slate-700">
-        {welcomeMessage}
-      </p>
+      <p className="flex-1 text-sm leading-relaxed text-fg">{welcomeMessage}</p>
 
       <button
         type="button"
         onClick={dismissWelcome}
         aria-label="Dismiss welcome message"
-        className="text-slate-400 transition-colors hover:text-slate-700"
+        className="link-muted"
       >
         ✕
       </button>

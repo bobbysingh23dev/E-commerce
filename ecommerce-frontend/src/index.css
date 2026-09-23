@@ -1,7 +1,141 @@
-/* This single import gives you every Tailwind utility class (Tailwind v4). */
+/* Fonts first (CSS requires @import before other rules). */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* A calm default background for the whole app. */
-body {
-  background-color: #f8fafc; /* slate-50 */
+/* ---------------------------------------------------------------------------
+   MIDNIGHT LUXE — design tokens
+   A dark, premium theme: near-black canvas, violet→indigo accents, soft glow.
+   These @theme vars become Tailwind utilities: bg-surface, text-fg, border-line,
+   from-accent, font-display, etc.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-ink: #0a0a0f; /* page background */
+  --color-surface: #13131c; /* cards */
+  --color-surface-2: #1b1b27; /* elevated surfaces / inputs */
+  --color-line: #2a2a3c; /* borders */
+  --color-fg: #f4f4f8; /* primary text */
+  --color-muted: #a2a2ba; /* secondary text */
+  --color-faint: #6b6b85; /* tertiary text / placeholders */
+
+  --color-accent: #8b5cf6; /* violet */
+  --color-accent-2: #6366f1; /* indigo */
+  --color-accent-3: #a78bfa; /* light violet (for gradient text) */
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    /* Ambient glow — fixed so it stays put while the page scrolls. */
+    background-image:
+      radial-gradient(
+        55rem 55rem at 12% -8%,
+        rgba(139, 92, 246, 0.16),
+        transparent 60%
+      ),
+      radial-gradient(
+        45rem 45rem at 105% 0%,
+        rgba(99, 102, 241, 0.14),
+        transparent 55%
+      ),
+      radial-gradient(
+        40rem 40rem at 50% 118%,
+        rgba(168, 85, 247, 0.1),
+        transparent 60%
+      );
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: rgba(139, 92, 246, 0.35);
+    color: #fff;
+  }
+
+  /* Slim, on-theme scrollbar (WebKit). */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a3c;
+    border-radius: 999px;
+    border: 2px solid var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a52;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reusable components — the design language, in one place.
+--------------------------------------------------------------------------- */
+@layer components {
+  /* Buttons ---------------------------------------------------------------- */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-br from-accent to-accent-2 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+    box-shadow: 0 8px 24px -8px rgba(124, 92, 246, 0.65);
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 34px -8px rgba(124, 92, 246, 0.9);
+    filter: brightness(1.08);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white/5 px-4 py-2.5 text-sm font-medium text-fg transition-all duration-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-300 transition-all duration-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Surfaces --------------------------------------------------------------- */
+  .card {
+    @apply rounded-2xl border border-line bg-surface;
+  }
+
+  .glass {
+    background-color: rgba(10, 10, 15, 0.72);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+  }
+
+  /* Form controls ---------------------------------------------------------- */
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-fg outline-none transition placeholder:text-faint;
+  }
+  .input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.28);
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-muted;
+  }
+
+  /* Bits ------------------------------------------------------------------- */
+  .chip {
+    @apply inline-flex items-center rounded-full border border-line bg-white/5 px-2.5 py-1 text-xs font-medium text-muted;
+  }
+  .alert-error {
+    @apply rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300;
+  }
+  .link-muted {
+    @apply text-muted transition-colors hover:text-fg;
+  }
+
+  /* Gradient text (headlines, wordmark). */
+  .gradient-text {
+    @apply bg-linear-to-r from-accent-3 via-accent to-accent-2 bg-clip-text text-transparent;
+  }
 }

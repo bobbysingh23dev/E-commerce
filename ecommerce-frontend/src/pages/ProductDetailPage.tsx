@@ -36,15 +36,13 @@ export default function ProductDetailPage() {
     };
   }, [productId]);
 
-  if (loading) return <p className="text-slate-500">Loading…</p>;
+  if (loading) return <p className="text-muted">Loading…</p>;
 
   if (error || !product) {
     return (
-      <div>
-        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
-          {error ?? "Product not found"}
-        </div>
-        <Link to="/" className="mt-4 inline-block text-sm underline">
+      <div className="mx-auto max-w-2xl">
+        <div className="alert-error">{error ?? "Product not found"}</div>
+        <Link to="/" className="mt-4 inline-block link-muted text-sm">
           ← Back to products
         </Link>
       </div>
@@ -52,70 +50,80 @@ export default function ProductDetailPage() {
   }
 
   const outOfStock = product.stock_quantity <= 0;
+  const hue = (product.id * 47) % 360;
+  const cover = {
+    backgroundImage: `radial-gradient(120% 120% at 20% 0%, hsl(${hue} 85% 62% / 0.95), transparent 55%), linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 55) % 360} 65% 38%))`,
+  };
 
   async function handleAdd() {
     if (!product) return;
-    // Server cart → must be logged in. Bounce to login, then back to this page.
     if (!user) {
-      navigate("/login", { state: { from: { pathname: `/products/${product.id}` } } });
+      navigate("/login", {
+        state: { from: { pathname: `/products/${product.id}` } },
+      });
       return;
     }
     setBusy(true);
     try {
       await addItem(product.id);
       setAdded(true);
-      window.setTimeout(() => setAdded(false), 1500); // brief "Added!" feedback
+      window.setTimeout(() => setAdded(false), 1500);
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Link
-        to="/"
-        className="mb-4 inline-block text-sm text-slate-500 hover:text-slate-900"
-      >
+    <div className="mx-auto max-w-4xl">
+      <Link to="/" className="mb-4 inline-block link-muted text-sm">
         ← Back to products
       </Link>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-2xl font-bold text-slate-900">{product.name}</h1>
-          {product.category_name && (
-            <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
-              {product.category_name}
-            </span>
-          )}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Gradient hero */}
+        <div
+          className="relative grid h-72 place-items-center overflow-hidden rounded-3xl border border-line md:h-full md:min-h-80"
+          style={cover}
+        >
+          <span className="font-display text-9xl font-bold text-white/25">
+            {product.name.charAt(0).toUpperCase()}
+          </span>
         </div>
 
-        {product.description && (
-          <p className="mt-3 text-slate-600">{product.description}</p>
-        )}
+        {/* Details */}
+        <div className="card flex flex-col p-7">
+          {product.category_name && (
+            <span className="chip mb-3 self-start">{product.category_name}</span>
+          )}
+          <h1 className="text-3xl font-bold">{product.name}</h1>
 
-        <p className="mt-4 text-3xl font-bold text-slate-900">
-          ${product.price}
-        </p>
+          {product.description && (
+            <p className="mt-3 text-muted">{product.description}</p>
+          )}
 
-        <p className="mt-1 text-sm text-slate-500">
-          {outOfStock ? "Out of stock" : `${product.stock_quantity} in stock`}
-        </p>
+          <p className="mt-6 gradient-text font-display text-4xl font-bold">
+            ${product.price}
+          </p>
+          <p className="mt-1 text-sm text-faint">
+            {outOfStock ? "Out of stock" : `${product.stock_quantity} in stock`}
+          </p>
 
-        <button
-          onClick={handleAdd}
-          disabled={outOfStock || busy}
-          className="mt-6 rounded-md bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {outOfStock
-            ? "Unavailable"
-            : !user
-              ? "Log in to add"
-              : busy
-                ? "Adding…"
-                : added
-                  ? "Added ✓"
-                  : "Add to cart"}
-        </button>
+          <button
+            onClick={handleAdd}
+            disabled={outOfStock || busy}
+            className="btn-primary mt-6 self-start px-6 py-3 text-base"
+          >
+            {outOfStock
+              ? "Unavailable"
+              : !user
+                ? "Log in to add"
+                : busy
+                  ? "Adding…"
+                  : added
+                    ? "Added to cart ✓"
+                    : "Add to cart"}
+          </button>
+        </div>
       </div>
     </div>
   );

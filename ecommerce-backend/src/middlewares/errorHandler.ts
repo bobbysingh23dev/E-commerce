@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
+import { logger } from "../config/logger";
 
 // 4 params = Express treats this as the error handler
 export function errorHandler(
@@ -21,7 +22,7 @@ export function errorHandler(
     return res.status(400).json({ error: "Referenced record does not exist" });
   }
 
-  // Anything unexpected → 500 (and log it)
-  console.error(err);
+  // Anything unexpected → 500 (log it with full context via pino)
+  logger.error({ err }, "Unhandled error");
   res.status(500).json({ error: "Internal server error" });
 }

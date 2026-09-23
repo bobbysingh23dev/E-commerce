@@ -3,6 +3,12 @@ import type { Product } from "../types/product";
 
 // Data-access layer: runs SQL, returns plain rows. No knowledge of HTTP.
 
+// search_vector is an internal full-text index column — never send it to clients.
+function stripSearchVector(row: Record<string, unknown> | undefined) {
+  if (row) delete row.search_vector;
+  return row;
+}
+
 export async function insertProduct(input: Omit<Product, "id">) {
   const { name, description, price, stock_quantity, category_id } = input;
 
@@ -18,7 +24,7 @@ export async function insertProduct(input: Omit<Product, "id">) {
       category_id ?? null,
     ],
   );
-  return result.rows[0];
+  return stripSearchVector(result.rows[0]);
 }
 
 export async function getProductById(id: number) {
@@ -30,7 +36,7 @@ export async function getProductById(id: number) {
     WHERE p.id = $1`,
     [id],
   );
-  return result.rows[0];
+  return stripSearchVector(result.rows[0]);
 }
 
 const SORTABLE = ["id", "name", "price", "created_at"];
@@ -71,7 +77,7 @@ export async function getAllProducts(
      LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
   const result = await pool.query(sql, params);
-  return result.rows;
+  return result.rows.map((row) => stripSearchVector(row));
 }
 
 export async function countProducts(filters: {
@@ -115,7 +121,7 @@ export async function putProductById(id: number, input: Omit<Product, "id">) {
       id,
     ],
   );
-  return result.rows[0];
+  return stripSearchVector(result.rows[0]);
 }
 
 export async function deleteProductById(id: number) {
@@ -123,5 +129,5 @@ export async function deleteProductById(id: number) {
     `DELETE FROM products WHERE id = $1 RETURNING *`,
     [id],
   );
-  return result.rows[0];
+  return stripSearchVector(result.rows[0]);
 }

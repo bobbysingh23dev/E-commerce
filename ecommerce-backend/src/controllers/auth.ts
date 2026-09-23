@@ -21,3 +21,9 @@ export async function loginUser(req: Request, res: Response) {
   if (!result) throw new UnauthorizedError("Invalid email or password");
   res.status(200).json(result);
 }
+export async function refreshToken(req: Request, res: Response) {
+  const { refreshToken } = req.body;
+  const result = await authService.refreshAccessToken(refreshToken);
+  if (!result) throw new UnauthorizedError("Invalid or expired refresh token");
+  res.status(200).json(result);
+}

@@ -5,6 +5,10 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import * as refreshTokenModel from "../models/refreshTokens";
 
+function hashToken(token: string) {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 export async function registerUser(input: RegisterInput) {
   const { email, password, name } = input;
   // Hash the password before it ever touches the database.
@@ -54,4 +58,28 @@ export const loginUser = async (email: string, password: string) => {
       role: user.role,
     },
   };
+};
+
+export const refreshAccessToken = async (refreshToken: string) => {
+  const tokenHash = hashToken(refreshToken);
+  const stored = await refreshTokenModel.findRefreshToken(tokenHash);
+  if (!stored) return null;
+
+  if (new Date(stored.expires_at) < new Date()) {
+    await refreshTokenModel.deleteRefreshToken(tokenHash);
+    return null;
+  }
+
+  const user = await userModel.findUserById(stored.user_id);
+  if (!user) return null;
+  const jwtToken = jwt.sign(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    process.env.JWT_SECRET as string,
+    { expiresIn: "15m" },
+  );
+  return { jwtToken };
 };

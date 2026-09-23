@@ -10,11 +10,12 @@ function stripSearchVector(row: Record<string, unknown> | undefined) {
 }
 
 export async function insertProduct(input: Omit<Product, "id">) {
-  const { name, description, price, stock_quantity, category_id } = input;
+  const { name, description, price, stock_quantity, category_id, image_url } =
+    input;
 
   const result = await pool.query(
-    `INSERT INTO products (name, description, price, stock_quantity, category_id)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO products (name, description, price, stock_quantity, category_id, image_url)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
     [
       name,
@@ -22,6 +23,7 @@ export async function insertProduct(input: Omit<Product, "id">) {
       price,
       stock_quantity ?? 0,
       category_id ?? null,
+      image_url ?? null,
     ],
   );
   return stripSearchVector(result.rows[0]);
@@ -107,10 +109,11 @@ export async function countProducts(filters: {
 }
 
 export async function putProductById(id: number, input: Omit<Product, "id">) {
-  const { name, description, price, stock_quantity, category_id } = input;
+  const { name, description, price, stock_quantity, category_id, image_url } =
+    input;
   const result = await pool.query(
-    `UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, category_id = $5,updated_at = now()
-    WHERE id = $6 
+    `UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, category_id = $5, image_url = $6, updated_at = now()
+    WHERE id = $7
     RETURNING *`,
     [
       name,
@@ -118,6 +121,7 @@ export async function putProductById(id: number, input: Omit<Product, "id">) {
       price,
       stock_quantity ?? 0,
       category_id ?? null,
+      image_url ?? null,
       id,
     ],
   );

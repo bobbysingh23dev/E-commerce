@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 
 export function validateProductBody(strict: boolean) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { name, description, price, stock_quantity, category_id } =
+    const { name, description, price, stock_quantity, category_id, image_url } =
       req.body ?? {};
     const errors: string[] = [];
 
@@ -37,6 +37,15 @@ export function validateProductBody(strict: boolean) {
       (!Number.isInteger(category_id) || category_id <= 0)
     ) {
       errors.push("category_id must be a positive integer");
+    }
+
+    // image_url — optional; if present, must be a string (a URL).
+    if (
+      image_url !== undefined &&
+      image_url !== null &&
+      typeof image_url !== "string"
+    ) {
+      errors.push("image_url must be a string URL");
     }
 
     if (errors.length > 0) {

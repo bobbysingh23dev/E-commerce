@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import { getProducts, deleteProduct } from "../../api/products";
 import type { Product } from "../../types";
 import AdminNav from "../../components/AdminNav";
+import { useToast } from "../../context/ToastContext";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     let ignore = false;
@@ -32,8 +34,11 @@ export default function AdminProductsPage() {
     try {
       await deleteProduct(product.id);
       setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      toast(`Deleted "${product.name}"`, "success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      const msg = err instanceof Error ? err.message : "Delete failed";
+      setError(msg);
+      toast(msg, "error");
     }
   }
 

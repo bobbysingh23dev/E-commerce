@@ -10,6 +10,7 @@ import type { Category } from "../../types";
 import { ApiError } from "../../api/client";
 import AdminNav from "../../components/AdminNav";
 import TextField from "../../components/TextField";
+import { useToast } from "../../context/ToastContext";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -20,6 +21,7 @@ export default function AdminCategoriesPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
 
   function refresh() {
     return getCategories()
@@ -62,6 +64,7 @@ export default function AdminCategoriesPage() {
     try {
       if (editingId !== null) await updateCategory(editingId, input);
       else await createCategory(input);
+      toast(editingId !== null ? "Category saved" : "Category added", "success");
       await refresh();
       resetForm();
     } catch (err) {
@@ -77,6 +80,7 @@ export default function AdminCategoriesPage() {
       await deleteCategory(category.id);
       setCategories((prev) => prev.filter((c) => c.id !== category.id));
       if (editingId === category.id) resetForm();
+      toast(`Deleted "${category.name}"`, "success");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Delete failed");
     }

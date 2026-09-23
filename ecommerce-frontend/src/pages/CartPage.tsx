@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import type { OrderSummary } from "../types";
+import AnimatedPrice from "../components/AnimatedPrice";
+import Magnetic from "../components/Magnetic";
+import { confetti } from "../lib/motion";
 
 export default function CartPage() {
   const { items, total, loading, updateQuantity, removeItem, clear, checkout } =
@@ -12,6 +15,11 @@ export default function CartPage() {
   const [placedOrder, setPlacedOrder] = useState<OrderSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Celebrate a successful checkout.
+  useEffect(() => {
+    if (placedOrder) confetti();
+  }, [placedOrder]);
 
   async function run(action: () => Promise<void>) {
     setError(null);
@@ -157,22 +165,25 @@ export default function CartPage() {
 
       <div className="card mt-6 flex items-center justify-between p-5">
         <span className="text-lg font-semibold text-muted">Total</span>
-        <span className="gradient-text font-display text-3xl font-bold">
-          ${total}
-        </span>
+        <AnimatedPrice
+          value={total}
+          className="gradient-text font-display text-3xl font-bold"
+        />
       </div>
 
       <div className="mt-4 flex justify-end gap-3">
         <button onClick={() => run(clear)} className="btn-ghost">
           Clear cart
         </button>
-        <button
-          onClick={handleCheckout}
-          disabled={submitting}
-          className="btn-primary px-6"
-        >
-          {submitting ? "Placing order…" : "Checkout →"}
-        </button>
+        <Magnetic>
+          <button
+            onClick={handleCheckout}
+            disabled={submitting}
+            className="btn-primary px-6"
+          >
+            {submitting ? "Placing order…" : "Checkout →"}
+          </button>
+        </Magnetic>
       </div>
     </div>
   );

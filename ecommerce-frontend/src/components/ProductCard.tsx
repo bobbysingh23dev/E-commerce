@@ -1,47 +1,61 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product } from "../types";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { useTilt } from "../hooks/useTilt";
+import { flyToCart } from "../lib/motion";
 
 interface ProductCardProps {
   product: Product;
+  index?: number; // for the staggered entrance
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { addItem } = useCart();
   const { user } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
+  const tilt = useTilt();
   const [busy, setBusy] = useState(false);
-  const [added, setAdded] = useState(false);
 
   const outOfStock = product.stock_quantity <= 0;
 
-  // No product images? Generate a unique, good-looking gradient per product so
-  // the grid feels designed, not empty. Deterministic: same id → same colors.
   const hue = (product.id * 47) % 360;
   const cover = {
     backgroundImage: `radial-gradient(120% 120% at 20% 0%, hsl(${hue} 85% 62% / 0.95), transparent 55%), linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 55) % 360} 65% 38%))`,
   };
 
-  async function handleAdd() {
+  async function handleAdd(e: MouseEvent<HTMLButtonElement>) {
     if (!user) {
       navigate("/login", { state: { from: { pathname: "/" } } });
       return;
     }
+    const btn = e.currentTarget;
     setBusy(true);
     try {
       await addItem(product.id);
-      setAdded(true);
-      window.setTimeout(() => setAdded(false), 1200);
+      flyToCart(btn);
+      toast(`${product.name} added to cart`, "success");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not add", "error");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="card group flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-[0_24px_60px_-24px_rgba(139,92,246,0.65)]">
-      {/* Gradient cover with the product initial */}
+    <div
+      ref={tilt.ref}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
+      className="card reveal group relative flex flex-col overflow-hidden transition-[transform,box-shadow,border-color] duration-200 ease-out will-change-transform hover:border-accent/50 hover:shadow-[0_24px_60px_-24px_rgba(139,92,246,0.65)]"
+      style={{ animationDelay: `${index * 55}ms` }}
+    >
+      {/* Cursor spotlight (reads --mx/--my set by the tilt hook) */}
+      <div className="spotlight pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
       <Link
         to={`/products/${product.id}`}
         className="relative block h-40 overflow-hidden"
@@ -62,8 +76,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
       </Link>
 
-      {/* Body */}
-      <div className="flex flex-1 flex-col p-4">
+      <div className="relative z-20 flex flex-1 flex-col p-4">
         <h3 className="font-display text-base font-semibold">
           <Link
             to={`/products/${product.id}`}
@@ -100,9 +113,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 ? "Log in to add"
                 : busy
                   ? "Adding…"
-                  : added
-                    ? "Added ✓"
-                    : "Add to cart"}
+                  : "Add to cart"}
           </button>
         </div>
       </div>

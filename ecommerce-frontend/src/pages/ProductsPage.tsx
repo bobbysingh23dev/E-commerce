@@ -62,20 +62,40 @@ export default function ProductsPage() {
 
   return (
     <div>
-      {/* ---- Hero ---- */}
-      <section className="relative mb-10 overflow-hidden rounded-3xl border border-line bg-surface/60 px-6 py-14 text-center sm:py-20">
-        {/* soft inner glow */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_120%_at_50%_-10%,rgba(139,92,246,0.25),transparent_70%)]" />
-        <div className="relative">
-          <span className="chip mb-5">✦ New season, new arrivals</span>
-          <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
-            Discover things <br className="hidden sm:block" />
-            you&apos;ll <span className="gradient-text">actually love</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base text-muted sm:text-lg">
-            A hand-picked catalog with a checkout that just works. Search, sort,
-            and fill your cart in seconds.
-          </p>
+      {/* ---- Bento hero (asymmetric) ---- */}
+      <section className="mb-10 grid gap-4 md:grid-cols-3">
+        <div className="relative overflow-hidden rounded-3xl border border-line bg-surface/60 p-8 md:col-span-2 md:p-12">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_10%_-10%,rgba(139,92,246,0.28),transparent_70%)]" />
+          <div className="relative">
+            <span className="chip mb-5">✦ New season, new arrivals</span>
+            <h1 className="max-w-2xl text-5xl font-bold leading-[1.02] tracking-tight md:text-7xl">
+              Discover things you&apos;ll{" "}
+              <span className="gradient-text">actually love</span>
+            </h1>
+            <p className="mt-5 max-w-lg text-base text-muted sm:text-lg">
+              A hand-picked catalog with a checkout that just works. Search,
+              sort, and fill your cart in seconds.
+            </p>
+          </div>
+        </div>
+
+        {/* Decorative accent tile */}
+        <div
+          className="relative flex flex-col justify-between overflow-hidden rounded-3xl border border-line p-8"
+          style={{
+            backgroundImage:
+              "radial-gradient(120% 120% at 80% 0%, rgba(167,139,250,0.9), transparent 55%), linear-gradient(135deg, #6d28d9, #4338ca)",
+          }}
+        >
+          <span className="text-4xl">✦</span>
+          <div>
+            <p className="font-display text-2xl font-bold text-white">
+              Fast, secure checkout
+            </p>
+            <p className="mt-1 text-sm text-white/70">
+              Real stock checks. Order in two clicks.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -153,8 +173,8 @@ export default function ProductsPage() {
             {pageInfo?.total} product{pageInfo?.total === 1 ? "" : "s"}
           </p>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {products.map((product, i) => (
+              <ProductCard key={product.id} product={product} index={i} />
             ))}
           </div>
           <Pagination

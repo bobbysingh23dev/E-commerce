@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { getOrder, updateOrderStatus } from "../api/orders";
 import type { OrderDetail } from "../types";
 import StatusBadge from "../components/StatusBadge";
+import AnimatedPrice from "../components/AnimatedPrice";
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -98,9 +99,10 @@ export default function OrderDetailPage() {
 
       <div className="card mt-4 flex items-center justify-between p-5">
         <span className="text-lg font-semibold text-muted">Total</span>
-        <span className="gradient-text font-display text-2xl font-bold">
-          ${order.total}
-        </span>
+        <AnimatedPrice
+          value={order.total}
+          className="gradient-text font-display text-2xl font-bold"
+        />
       </div>
 
       {canCancel && (

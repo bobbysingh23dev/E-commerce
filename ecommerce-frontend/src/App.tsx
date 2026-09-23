@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "./context/ToastContext";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import Layout from "./components/Layout";
@@ -19,9 +20,10 @@ import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 // Providers wrap the Router so every page + the nav can call useAuth()/useCart().
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
+    <ToastProvider>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
               {/* Public */}
@@ -91,9 +93,10 @@ export default function App() {
                 }
               />
             </Route>
-          </Routes>
-        </BrowserRouter>
-      </CartProvider>
-    </AuthProvider>
+            </Routes>
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }

@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProduct } from "../api/products";
 import type { Product } from "../types";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import Magnetic from "../components/Magnetic";
+import { flyToCart } from "../lib/motion";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const productId = Number(id);
   const { addItem } = useCart();
   const { user } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -55,7 +59,7 @@ export default function ProductDetailPage() {
     backgroundImage: `radial-gradient(120% 120% at 20% 0%, hsl(${hue} 85% 62% / 0.95), transparent 55%), linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 55) % 360} 65% 38%))`,
   };
 
-  async function handleAdd() {
+  async function handleAdd(e: MouseEvent<HTMLButtonElement>) {
     if (!product) return;
     if (!user) {
       navigate("/login", {
@@ -63,11 +67,16 @@ export default function ProductDetailPage() {
       });
       return;
     }
+    const btn = e.currentTarget;
     setBusy(true);
     try {
       await addItem(product.id);
+      flyToCart(btn);
+      toast(`${product.name} added to cart`, "success");
       setAdded(true);
       window.setTimeout(() => setAdded(false), 1500);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not add", "error");
     } finally {
       setBusy(false);
     }
@@ -108,21 +117,23 @@ export default function ProductDetailPage() {
             {outOfStock ? "Out of stock" : `${product.stock_quantity} in stock`}
           </p>
 
-          <button
-            onClick={handleAdd}
-            disabled={outOfStock || busy}
-            className="btn-primary mt-6 self-start px-6 py-3 text-base"
-          >
-            {outOfStock
-              ? "Unavailable"
-              : !user
-                ? "Log in to add"
-                : busy
-                  ? "Adding…"
-                  : added
-                    ? "Added to cart ✓"
-                    : "Add to cart"}
-          </button>
+          <Magnetic className="mt-6 self-start">
+            <button
+              onClick={handleAdd}
+              disabled={outOfStock || busy}
+              className="btn-primary px-6 py-3 text-base"
+            >
+              {outOfStock
+                ? "Unavailable"
+                : !user
+                  ? "Log in to add"
+                  : busy
+                    ? "Adding…"
+                    : added
+                      ? "Added to cart ✓"
+                      : "Add to cart"}
+            </button>
+          </Magnetic>
         </div>
       </div>
     </div>

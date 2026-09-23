@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "biome lint ./src",
-    "lint:fix": "biome lint --write ./src"
+    "lint:fix": "biome lint --write ./src",
+    "migrate": "bash scripts/migrate.sh"
   },
   "lint-staged": {
     "*.{ts,js}": [

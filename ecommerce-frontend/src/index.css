@@ -34,18 +34,13 @@
     background-image:
       radial-gradient(
         55rem 55rem at 12% -8%,
-        rgba(139, 92, 246, 0.16),
+        rgba(139, 92, 246, 0.1),
         transparent 60%
       ),
       radial-gradient(
         45rem 45rem at 105% 0%,
-        rgba(99, 102, 241, 0.14),
+        rgba(99, 102, 241, 0.09),
         transparent 55%
-      ),
-      radial-gradient(
-        40rem 40rem at 50% 118%,
-        rgba(168, 85, 247, 0.1),
-        transparent 60%
       );
     background-attachment: fixed;
   }
@@ -137,5 +132,93 @@
   /* Gradient text (headlines, wordmark). */
   .gradient-text {
     @apply bg-linear-to-r from-accent-3 via-accent to-accent-2 bg-clip-text text-transparent;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   MOTION — the "alive" layer. Everything here is disabled under
+   prefers-reduced-motion (see the media query at the bottom).
+--------------------------------------------------------------------------- */
+
+/* Staggered entrance for grids. Uses fill-mode `backwards` so the FROM state
+   shows during the per-item delay, and after finishing the element reverts to
+   normal styles — which lets JS-driven transforms (card tilt) take over. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.reveal {
+  animation: reveal-up 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+
+/* Toast slide-in. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.toast-in {
+  animation: toast-in 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* Drifting aurora blobs behind everything. */
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8vw, 6vh) scale(1.15);
+  }
+}
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(-7vw, -5vh) scale(0.95);
+  }
+}
+.aurora-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(95px);
+  opacity: 0.38;
+}
+
+/* Film grain — a subtle tactile texture over the whole page. */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+}
+
+/* Card tilt spotlight — a glow that tracks the cursor (vars set in JS). */
+.spotlight {
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.09),
+    transparent 45%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+  .aurora-blob {
+    animation: none !important;
   }
 }

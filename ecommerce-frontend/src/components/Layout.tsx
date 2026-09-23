@@ -2,6 +2,8 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import WelcomeBanner from "./WelcomeBanner";
+import Aurora from "./Aurora";
+import Logo from "./Logo";
 
 // Nav links share this style; NavLink gives us an active state for free.
 const navLink = ({ isActive }: { isActive: boolean }) =>
@@ -13,14 +15,16 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Ambient background + film grain (both purely decorative) */}
+      <Aurora />
+      <div className="grain pointer-events-none fixed inset-0 z-90" aria-hidden />
+
       {/* ---- Sticky frosted nav ---- */}
       <header className="glass sticky top-0 z-50 border-b border-line">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
           {/* Wordmark: a glowing gradient mark + gradient text */}
           <Link to="/" className="group flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-linear-to-br from-accent to-accent-2 text-sm font-bold text-white shadow-[0_6px_18px_-4px_rgba(124,92,246,0.8)] transition-transform group-hover:scale-105">
-              B
-            </span>
+            <Logo className="h-8 w-8 transition-transform group-hover:scale-105" />
             <span className="font-display text-lg font-bold tracking-tight">
               Bobby&apos;s <span className="gradient-text">Shop</span>
             </span>
@@ -48,7 +52,9 @@ export default function Layout() {
               to="/cart"
               className="relative flex items-center gap-1.5 rounded-full border border-line bg-white/5 px-3.5 py-1.5 font-medium text-fg transition hover:bg-white/10"
             >
-              <BagIcon />
+              <span id="cart-icon" className="inline-flex">
+                <BagIcon />
+              </span>
               Cart
               {itemCount > 0 && (
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-linear-to-br from-accent to-accent-2 px-1 text-xs font-bold text-white shadow-[0_0_12px_rgba(139,92,246,0.8)]">

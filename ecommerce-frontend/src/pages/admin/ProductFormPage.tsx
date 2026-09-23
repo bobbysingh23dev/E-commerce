@@ -6,11 +6,13 @@ import type { Category, ProductInput } from "../../types";
 import { ApiError } from "../../api/client";
 import AdminNav from "../../components/AdminNav";
 import TextField from "../../components/TextField";
+import { useToast } from "../../context/ToastContext";
 
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = id !== undefined;
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -70,6 +72,7 @@ export default function ProductFormPage() {
     try {
       if (isEdit) await updateProduct(Number(id), input);
       else await createProduct(input);
+      toast(isEdit ? "Product saved" : "Product created", "success");
       navigate("/admin/products");
     } catch (err) {
       if (err instanceof ApiError) {

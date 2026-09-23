@@ -49,8 +49,10 @@ export async function getAllProducts(
     conditions.push(`p.category_id = $${params.length}`);
   }
   if (filters.search !== undefined) {
-    params.push(`%${filters.search}%`);
-    conditions.push(`p.name ILIKE $${params.length}`);
+    params.push(filters.search);
+    conditions.push(
+      `p.search_vector @@ websearch_to_tsquery('english', $${params.length})`,
+    );
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -84,8 +86,10 @@ export async function countProducts(filters: {
     conditions.push(`category_id = $${params.length}`);
   }
   if (filters.search !== undefined) {
-    params.push(`%${filters.search}%`);
-    conditions.push(`name ILIKE $${params.length}`);
+    params.push(filters.search);
+    conditions.push(
+      `search_vector @@ websearch_to_tsquery('english', $${params.length})`,
+    );
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";

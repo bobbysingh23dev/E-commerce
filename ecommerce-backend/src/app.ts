@@ -5,7 +5,8 @@ import swaggerUi from "swagger-ui-express";
 import routes from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { openapiDocument } from "./openapi";
-
+import { pinoHttp } from "pino-http";
+import { logger } from "./config/logger";
 dotenv.config();
 
 // The Express app, WITHOUT app.listen(). Exported so tests (supertest) can use
@@ -15,6 +16,7 @@ export const app = express();
 // ---- Global middleware ----
 app.use(cors());
 app.use(express.json());
+app.use(pinoHttp({ logger }));
 
 // ---- API docs (Swagger UI) ----
 // openapiDocument = the hand-written openapi.yaml with the cart input schemas

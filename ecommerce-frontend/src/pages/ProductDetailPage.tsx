@@ -6,6 +6,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import Magnetic from "../components/Magnetic";
+import ProductImage from "../components/ProductImage";
 import { flyToCart } from "../lib/motion";
 
 export default function ProductDetailPage() {
@@ -54,10 +55,6 @@ export default function ProductDetailPage() {
   }
 
   const outOfStock = product.stock_quantity <= 0;
-  const hue = (product.id * 47) % 360;
-  const cover = {
-    backgroundImage: `radial-gradient(120% 120% at 20% 0%, hsl(${hue} 85% 62% / 0.95), transparent 55%), linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 55) % 360} 65% 38%))`,
-  };
 
   async function handleAdd(e: MouseEvent<HTMLButtonElement>) {
     if (!product) return;
@@ -89,14 +86,9 @@ export default function ProductDetailPage() {
       </Link>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Gradient hero */}
-        <div
-          className="relative grid h-72 place-items-center overflow-hidden rounded-3xl border border-line md:h-full md:min-h-80"
-          style={cover}
-        >
-          <span className="font-display text-9xl font-bold text-white/25">
-            {product.name.charAt(0).toUpperCase()}
-          </span>
+        {/* Product image (falls back to gradient inside ProductImage) */}
+        <div className="relative h-80 overflow-hidden rounded-3xl border border-line md:h-full md:min-h-80">
+          <ProductImage product={product} />
         </div>
 
         {/* Details */}

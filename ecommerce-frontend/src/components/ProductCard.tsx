@@ -5,6 +5,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { flyToCart } from "../lib/motion";
+import ProductImage from "./ProductImage";
 
 interface ProductCardProps {
   product: Product;
@@ -19,10 +20,6 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [busy, setBusy] = useState(false);
 
   const outOfStock = product.stock_quantity <= 0;
-  const hue = (product.id * 47) % 360;
-  const cover = {
-    backgroundImage: `radial-gradient(120% 120% at 20% 0%, hsl(${hue} 85% 62% / 0.95), transparent 55%), linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 55) % 360} 65% 38%))`,
-  };
 
   async function handleAdd(e: MouseEvent<HTMLButtonElement>) {
     if (!user) {
@@ -50,14 +47,11 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       {/* Cover — the gradient zooms slowly on hover (cinematic), and a
           "Quick add" bar rises from the bottom. Motion that REVEALS. */}
       <div className="relative h-44 overflow-hidden">
-        <Link
-          to={`/products/${product.id}`}
-          className="absolute inset-0 block transition-transform duration-900 ease-out group-hover:scale-[1.12]"
-          style={cover}
-        >
-          <span className="absolute inset-0 grid place-items-center font-display text-7xl font-bold text-white/25">
-            {product.name.charAt(0).toUpperCase()}
-          </span>
+        <Link to={`/products/${product.id}`} className="absolute inset-0 block">
+          <ProductImage
+            product={product}
+            className="transition-transform duration-900 ease-out group-hover:scale-[1.12]"
+          />
         </Link>
 
         {product.category_name && (

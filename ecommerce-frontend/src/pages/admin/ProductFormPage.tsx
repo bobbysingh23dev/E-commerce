@@ -19,6 +19,7 @@ export default function ProductFormPage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(isEdit);
@@ -43,6 +44,7 @@ export default function ProductFormPage() {
         setPrice(p.price);
         setStock(String(p.stock_quantity));
         setCategoryId(p.category_id ? String(p.category_id) : "");
+        setImageUrl(p.image_url ?? "");
       })
       .catch((err) => {
         if (!ignore) setError(err.message ?? "Failed to load product");
@@ -67,6 +69,7 @@ export default function ProductFormPage() {
       price: Number(price),
       stock_quantity: Number(stock || 0),
       category_id: categoryId ? Number(categoryId) : null,
+      image_url: imageUrl.trim() === "" ? null : imageUrl.trim(),
     };
 
     try {
@@ -156,6 +159,30 @@ export default function ProductFormPage() {
             ))}
           </select>
         </label>
+
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <TextField
+              label="Image URL"
+              value={imageUrl}
+              onChange={setImageUrl}
+              placeholder="https://…"
+            />
+          </div>
+          {imageUrl.trim() !== "" && (
+            <img
+              src={imageUrl}
+              alt="preview"
+              className="mt-6 h-16 w-16 shrink-0 rounded-lg border border-line object-cover"
+              onError={(e) => {
+                e.currentTarget.style.visibility = "hidden";
+              }}
+              onLoad={(e) => {
+                e.currentTarget.style.visibility = "visible";
+              }}
+            />
+          )}
+        </div>
 
         <div className="flex gap-3 pt-1">
           <button type="submit" disabled={submitting} className="btn-primary px-6">

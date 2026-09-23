@@ -10,6 +10,7 @@ export interface Product {
   is_active: boolean;
   category_id: number | null;
   category_name: string | null; // present on list/detail reads (via JOIN)
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,6 +31,7 @@ export interface ProductInput {
   price: number;
   stock_quantity: number;
   category_id: number | null;
+  image_url: string | null;
 }
 
 export interface CategoryInput {

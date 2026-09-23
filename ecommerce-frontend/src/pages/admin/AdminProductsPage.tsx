@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getProducts, deleteProduct } from "../../api/products";
 import type { Product } from "../../types";
 import AdminNav from "../../components/AdminNav";
+import ProductImage from "../../components/ProductImage";
 import { useToast } from "../../context/ToastContext";
 
 export default function AdminProductsPage() {
@@ -72,7 +73,14 @@ export default function AdminProductsPage() {
             <tbody className="divide-y divide-line">
               {products.map((p) => (
                 <tr key={p.id} className="transition hover:bg-white/5">
-                  <td className="px-4 py-3 font-medium text-fg">{p.name}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-line">
+                        <ProductImage product={p} />
+                      </div>
+                      <span className="font-medium text-fg">{p.name}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-muted">
                     {p.category_name ?? "—"}
                   </td>

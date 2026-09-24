@@ -8,5 +8,8 @@ export default defineConfig({
     // Run tests one file at a time — they share a single Postgres database,
     // so parallel writes could interfere with each other.
     fileParallelism: false,
+    env: {
+      DB_NAME: "E-Commerce-test",
+    },
   },
 });

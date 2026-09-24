@@ -1,3 +1,4 @@
+import { env } from "./config/env"; // first — validates env before anything loads
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -8,6 +9,7 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { openapiDocument } from "./openapi";
 import { pinoHttp } from "pino-http";
 import { logger } from "./config/logger";
+import { pool } from "./config/db";
 dotenv.config();
 
 // The Express app, WITHOUT app.listen(). Exported so tests (supertest) can use
@@ -19,9 +21,19 @@ export const app = express();
 // it mainly protects HTML pages, and this is a JSON API.
 app.use(helmet({ contentSecurityPolicy: false }));
 // Only allow the frontend origin to call this API from a browser.
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
+app.use(cors({ origin: env.FRONTEND_URL }));
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+
+// ---- Health check (for load balancers / Docker / uptime monitors) ----
+app.get("/health", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1"); // also confirms the DB is reachable
+    res.status(200).json({ status: "ok", uptime: process.uptime() });
+  } catch {
+    res.status(503).json({ status: "error", db: "unreachable" });
+  }
+});
 
 // ---- API docs (Swagger UI) ----
 // openapiDocument = the hand-written openapi.yaml with the cart input schemas

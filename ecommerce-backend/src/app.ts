@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 import cors from "cors";
 import dotenv from "dotenv";
 import swaggerUi from "swagger-ui-express";
@@ -14,7 +15,11 @@ dotenv.config();
 export const app = express();
 
 // ---- Global middleware ----
-app.use(cors());
+// Security headers first. CSP is disabled so Swagger UI (/docs) still works;
+// it mainly protects HTML pages, and this is a JSON API.
+app.use(helmet({ contentSecurityPolicy: false }));
+// Only allow the frontend origin to call this API from a browser.
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
 app.use(express.json());
 app.use(pinoHttp({ logger }));
 

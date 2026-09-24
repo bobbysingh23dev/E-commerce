@@ -6,12 +6,23 @@ import {
 } from "../middlewares/validateRegisterBody";
 import { validate } from "../middlewares/validate";
 import { refreshSchema } from "../schemas/auth";
+import { authLimiter } from "../middlewares/rateLimit";
 
 const authRouter = Router();
 
-authRouter.post("/register", validateRegisterBody, authController.registerUser);
+authRouter.post(
+  "/register",
+  authLimiter,
+  validateRegisterBody,
+  authController.registerUser,
+);
 
-authRouter.post("/login", validateLoginBody, authController.loginUser);
+authRouter.post(
+  "/login",
+  authLimiter,
+  validateLoginBody,
+  authController.loginUser,
+);
 authRouter.post(
   "/refresh",
   validate(refreshSchema),

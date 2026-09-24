@@ -13,6 +13,9 @@ export default function AdminNav() {
       <span className="mr-2 text-xs font-semibold uppercase tracking-wider text-faint">
         Admin
       </span>
+      <NavLink to="/admin/dashboard" className={tabClass}>
+        Dashboard
+      </NavLink>
       <NavLink to="/admin/products" className={tabClass}>
         Products
       </NavLink>

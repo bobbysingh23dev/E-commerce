@@ -36,7 +36,7 @@ export default function Layout() {
             </NavLink>
 
             {user?.role === "admin" && (
-              <NavLink to="/admin/products" className={navLink}>
+              <NavLink to="/admin/dashboard" className={navLink}>
                 Admin
               </NavLink>
             )}

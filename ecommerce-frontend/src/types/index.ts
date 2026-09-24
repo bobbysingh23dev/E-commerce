@@ -89,6 +89,30 @@ export interface Paginated<T> {
   pagination: Pagination;
 }
 
+// ---------- Reports (admin analytics) ----------
+export interface ReportSummary {
+  overview: {
+    totalRevenue: string; // money as string
+    orderCount: number;
+    avgOrderValue: string; // money as string
+    productCount: number;
+    customerCount: number;
+  };
+  // Only statuses that actually occur are present.
+  ordersByStatus: Partial<Record<OrderStatus, number>>;
+  topProducts: {
+    id: number;
+    name: string;
+    unitsSold: number;
+    revenue: string;
+  }[];
+  bestSellerPerCategory: {
+    category: string;
+    product: string;
+    units_sold: number; // note: snake_case from this query
+  }[];
+}
+
 // ---------- Cart (server-side, per user) ----------
 // One line as GET /cart returns it — joined to products for a LIVE price.
 export interface CartItemView {

@@ -13,6 +13,7 @@ import AccountPage from "./pages/AccountPage";
 import CartPage from "./pages/CartPage";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import ProductFormPage from "./pages/admin/ProductFormPage";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
@@ -60,6 +61,14 @@ export default function App() {
               />
 
               {/* Admin only — AdminRoute redirects non-admins away */}
+              <Route
+                path="admin/dashboard"
+                element={
+                  <AdminRoute>
+                    <AdminDashboardPage />
+                  </AdminRoute>
+                }
+              />
               <Route
                 path="admin/products"
                 element={

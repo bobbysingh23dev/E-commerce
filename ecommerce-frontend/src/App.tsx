@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AccountPage from "./pages/AccountPage";
 import CartPage from "./pages/CartPage";
+import PaymentPage from "./pages/PaymentPage";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -56,6 +57,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <OrderDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="pay/:orderId"
+                element={
+                  <ProtectedRoute>
+                    <PaymentPage />
                   </ProtectedRoute>
                 }
               />

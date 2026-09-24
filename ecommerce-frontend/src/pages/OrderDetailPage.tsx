@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getOrder, updateOrderStatus } from "../api/orders";
 import type { OrderDetail } from "../types";
 import StatusBadge from "../components/StatusBadge";
@@ -8,6 +8,7 @@ import AnimatedPrice from "../components/AnimatedPrice";
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const orderId = Number(id);
+  const navigate = useNavigate();
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,15 +106,25 @@ export default function OrderDetailPage() {
         />
       </div>
 
-      {canCancel && (
-        <button
-          onClick={handleCancel}
-          disabled={cancelling}
-          className="btn-danger mt-6"
-        >
-          {cancelling ? "Cancelling…" : "Cancel order"}
-        </button>
-      )}
+      <div className="mt-6 flex gap-3">
+        {order.status === "pending" && (
+          <button
+            onClick={() => navigate(`/pay/${order.id}`)}
+            className="btn-primary px-6"
+          >
+            Pay now
+          </button>
+        )}
+        {canCancel && (
+          <button
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="btn-danger"
+          >
+            {cancelling ? "Cancelling…" : "Cancel order"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

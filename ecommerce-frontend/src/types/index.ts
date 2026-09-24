@@ -89,6 +89,13 @@ export interface Paginated<T> {
   pagination: Pagination;
 }
 
+// ---------- Payments (Stripe) ----------
+export interface PaymentIntentResponse {
+  clientSecret: string;
+  amount: number; // in cents
+  currency: string;
+}
+
 // ---------- Reports (admin analytics) ----------
 export interface ReportSummary {
   overview: {

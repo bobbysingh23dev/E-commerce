@@ -1,4 +1,4 @@
-import { getStripe } from "../config/stripe";
+import { stripe } from "../config/stripe";
 import { BadRequestError, NotFoundError } from "../errors/AppError";
 import * as orderModel from "../models/orders";
 
@@ -13,7 +13,7 @@ export const createPaymentIntent = async (orderId: number, userId: number) => {
   // Stripe uses the smallest currency unit → cents. $54.97 → 5497.
   const amount = Math.round(Number(order.total) * 100);
 
-  const intent = await getStripe().paymentIntents.create({
+  const intent = await stripe.paymentIntents.create({
     amount,
     currency: "usd",
     metadata: { orderId: String(orderId), userId: String(userId) },
@@ -33,7 +33,7 @@ export const confirmPayment = async (
   if (!paymentIntentId)
     throw new BadRequestError("paymentIntentId is required");
 
-  const intent = await getStripe().paymentIntents.retrieve(paymentIntentId);
+  const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
   if (intent.metadata.orderId !== String(orderId))
     throw new BadRequestError("Payment does not belong to this order");

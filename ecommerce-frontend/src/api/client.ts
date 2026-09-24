@@ -2,7 +2,10 @@
 // Every API call in the app goes through apiFetch(), so cross-cutting concerns
 // (base URL, auth header, JSON parsing, error handling) live in ONE spot.
 
-export const API_BASE_URL = "http://localhost:4000";
+// In production (Vercel) we set VITE_API_BASE_URL to the deployed backend URL.
+// Locally, when it's unset, we fall back to the dev backend on :4000.
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 
 const TOKEN_KEY = "jwtToken";
 

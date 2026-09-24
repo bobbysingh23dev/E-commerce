@@ -6,6 +6,9 @@
 interface ImportMetaEnv {
   readonly VITE_GEMINI_API_KEY: string;
   readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
+  // Backend API base URL. Optional: unset in local dev (falls back to :4000),
+  // set on Vercel to the deployed Render URL.
+  readonly VITE_API_BASE_URL?: string;
 }
 
 interface ImportMeta {

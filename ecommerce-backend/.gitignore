@@ -6,6 +6,7 @@ dist/
 
 # Secrets & environment config — NEVER commit this
 .env
+.env.render
 
 # macOS junk
 .DS_Store

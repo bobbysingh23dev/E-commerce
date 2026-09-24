@@ -20,3 +20,26 @@ export const createPaymentIntent = async (orderId: number, userId: number) => {
   });
   return { clientSecret: intent.client_secret, amount, currency: "usd" };
 };
+
+export const confirmPayment = async (
+  orderId: number,
+  userId: number,
+  paymentIntentId: string,
+) => {
+  const order = await orderModel.getOrderById(orderId, userId);
+  if (!order) throw new NotFoundError("Order not found");
+  if (order.status === "paid") return order; // already paid → safe to call again
+
+  if (!paymentIntentId)
+    throw new BadRequestError("paymentIntentId is required");
+
+  const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+  if (intent.metadata.orderId !== String(orderId))
+    throw new BadRequestError("Payment does not belong to this order");
+
+  if (intent.status !== "succeeded")
+    throw new BadRequestError("Payment has not succeeded yet");
+
+  return orderModel.updateOrderStatus(orderId, userId, "paid");
+};

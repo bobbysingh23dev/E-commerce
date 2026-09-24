@@ -7,5 +7,10 @@ const paymentRouter = Router();
 
 paymentRouter.use(authenticate);
 paymentRouter.post("/:id/intent", validateId, paymentController.createIntent);
+paymentRouter.post(
+  "/:id/confirm",
+  validateId,
+  paymentController.confirmPayment,
+);
 
 export default paymentRouter;

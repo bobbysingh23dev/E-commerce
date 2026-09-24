@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import YAML from "yamljs";
 import { z } from "zod";
 import { addCartItemSchema, quantitySchema } from "./schemas/cart";

@@ -4,7 +4,7 @@ import { logger } from "../config/logger";
 
 // 4 params = Express treats this as the error handler
 export function errorHandler(
-  err: any,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction,
@@ -15,10 +15,12 @@ export function errorHandler(
   }
 
   // Known Postgres errors → friendly status
-  if (err.code === "23505") {
+  // Postgres errors carry a `code` — narrow it out without using `any`.
+  const pgCode = (err as { code?: string }).code;
+  if (pgCode === "23505") {
     return res.status(409).json({ error: "That value already exists" });
   }
-  if (err.code === "23503") {
+  if (pgCode === "23503") {
     return res.status(400).json({ error: "Referenced record does not exist" });
   }
 

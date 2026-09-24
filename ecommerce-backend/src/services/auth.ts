@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import * as userModel from "../models/users";
 import type { RegisterInput } from "../types/user";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import * as refreshTokenModel from "../models/refreshTokens";
 
 function hashToken(token: string) {

@@ -50,7 +50,7 @@ export async function getAllProducts(
   offset: number,
 ) {
   const conditions: string[] = [];
-  const params: any[] = [];
+  const params: unknown[] = [];
 
   if (filters.category_id !== undefined) {
     params.push(filters.category_id);
@@ -87,7 +87,7 @@ export async function countProducts(filters: {
   search?: string;
 }) {
   const conditions: string[] = [];
-  const params: any[] = [];
+  const params: unknown[] = [];
 
   if (filters.category_id !== undefined) {
     params.push(filters.category_id);

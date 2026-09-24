@@ -13,7 +13,13 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // If apiFetch bounced us here after an expired token (it adds ?expired=1),
+  // explain why instead of showing a blank form. Reuses the same alert box.
+  const [error, setError] = useState<string | null>(
+    new URLSearchParams(location.search).get("expired") === "1"
+      ? "Your session expired — please log in again."
+      : null,
+  );
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {

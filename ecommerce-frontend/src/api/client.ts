@@ -58,6 +58,26 @@ export async function apiFetch<T>(
   if (!res.ok) {
     // Your backend returns { error: "..." } and sometimes { details: [...] }.
     const message = data?.error ?? `Request failed (${res.status})`;
+
+    // Session expired / token invalid → force a clean logout + send to /login.
+    // When a request we sent WITH a token comes back 401, the backend rejected
+    // that token (expired or invalid — see backend authenticate.ts). Rather than
+    // leave the user stuck on a page whose calls keep failing, we log them out
+    // and redirect. Guards:
+    //   • `token`  — only when WE actually sent one (a stale logged-in session),
+    //     not a 401 while already logged out.
+    //   • skip /auth/* — a wrong email/password on the login form is also a 401,
+    //     and that must show its own error, not bounce to /login.
+    // We clear the token (AuthContext treats "no token" as logged out) and do a
+    // full-page redirect, which works even though this runs outside React/Router.
+    if (res.status === 401 && token && !path.startsWith("/auth/")) {
+      clearToken();
+      localStorage.removeItem("user"); // mirror AuthContext's logout (USER_KEY)
+      if (window.location.pathname !== "/login") {
+        window.location.assign("/login?expired=1");
+      }
+    }
+
     throw new ApiError(res.status, message, data?.details);
   }
 

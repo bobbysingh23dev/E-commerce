@@ -19,6 +19,13 @@ export const pool = new Pool({
   // If DB_PASSWORD is blank (local trust auth), send undefined instead of "".
   password: process.env.DB_PASSWORD || undefined,
   database: process.env.DB_NAME,
+  // Managed Postgres (Neon) only accepts ENCRYPTED (SSL) connections; your local
+  // Postgres has no SSL. So we make it conditional: set DB_SSL=true in production
+  // (Render) to turn it on, and leave it off locally/CI/Docker.
+  //   rejectUnauthorized:false = "encrypt the traffic, but don't verify the
+  //   server's certificate against a local CA file" — keeps setup simple while
+  //   the connection is still encrypted. This is the standard setting for Neon.
+  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 
 /**

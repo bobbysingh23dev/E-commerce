@@ -24,7 +24,7 @@ export const createOrder = async (user_id: number, items: OrderItemInput) => {
     const lineItems: LineItems = [];
     for (const item of items) {
       const result = await client.query(
-        ` SELECT id, price , stock_quantity from products where id = $1`,
+        `SELECT id, price, stock_quantity FROM products WHERE id = $1 FOR UPDATE`,
         [item.product_id],
       );
       const product = result.rows[0];

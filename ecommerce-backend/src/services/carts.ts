@@ -71,7 +71,8 @@ export async function checkout(userId: number) {
       `SELECT ci.product_id, ci.quantity, p.price, p.stock_quantity, p.name
        FROM cart_items ci
        JOIN products p ON p.id = ci.product_id
-       WHERE ci.cart_id = $1`,
+       WHERE ci.cart_id = $1
+       FOR UPDATE OF p`, // lock the product rows so concurrent checkouts serialize
       [cartId],
     );
     const items = cartResult.rows;

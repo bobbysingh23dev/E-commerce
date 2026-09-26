@@ -7,6 +7,7 @@ dist/
 # Secrets & environment config — NEVER commit this
 .env
 .env.render
+admin-credentials.local.txt
 
 # macOS junk
 .DS_Store

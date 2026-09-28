@@ -49,8 +49,12 @@ export async function getProductById(req: Request, res: Response) {
 
 export async function putProductById(req: Request, res: Response) {
   const id = Number(req.params.id);
-  const input: Omit<Product, "id"> = req.body;
-  const updatedProduct = await productService.putProductById(id, input);
+  const { version, ...input } = req.body;
+  const updatedProduct = await productService.putProductById(
+    id,
+    input,
+    version,
+  );
   if (!updatedProduct) throw new NotFoundError("Product not found");
   res.status(200).json(updatedProduct);
 }

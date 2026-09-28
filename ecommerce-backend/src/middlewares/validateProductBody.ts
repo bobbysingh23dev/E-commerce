@@ -2,8 +2,15 @@ import type { Request, Response, NextFunction } from "express";
 
 export function validateProductBody(strict: boolean) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { name, description, price, stock_quantity, category_id, image_url } =
-      req.body ?? {};
+    const {
+      name,
+      description,
+      price,
+      stock_quantity,
+      category_id,
+      image_url,
+      version,
+    } = req.body ?? {};
     const errors: string[] = [];
 
     // name — always required; must be a non-empty string.
@@ -46,6 +53,11 @@ export function validateProductBody(strict: boolean) {
       typeof image_url !== "string"
     ) {
       errors.push("image_url must be a string URL");
+    }
+
+    // version — required on updates (PUT/strict) for optimistic locking.
+    if (strict && (!Number.isInteger(version) || version < 1)) {
+      errors.push("version is required and must be a positive integer");
     }
 
     if (errors.length > 0) {

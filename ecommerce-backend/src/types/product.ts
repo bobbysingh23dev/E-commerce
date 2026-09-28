@@ -8,4 +8,5 @@ export interface Product {
   stock_quantity?: number | null;
   category_id?: number | null;
   image_url?: string | null;
+  version?: number;
 }

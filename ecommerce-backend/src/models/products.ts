@@ -108,12 +108,17 @@ export async function countProducts(filters: {
   return Number(result.rows[0].count);
 }
 
-export async function putProductById(id: number, input: Omit<Product, "id">) {
+export async function putProductById(
+  id: number,
+  input: Omit<Product, "id">,
+  version: number,
+) {
   const { name, description, price, stock_quantity, category_id, image_url } =
     input;
   const result = await pool.query(
-    `UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, category_id = $5, image_url = $6, updated_at = now()
-    WHERE id = $7
+    // Only update if version still matches → bump version. Stale write = 0 rows.
+    `UPDATE products SET name = $1, description = $2, price = $3, stock_quantity = $4, category_id = $5, image_url = $6, version = version + 1, updated_at = now()
+    WHERE id = $7 AND version = $8
     RETURNING *`,
     [
       name,
@@ -123,6 +128,7 @@ export async function putProductById(id: number, input: Omit<Product, "id">) {
       category_id ?? null,
       image_url ?? null,
       id,
+      version,
     ],
   );
   return stripSearchVector(result.rows[0]);

@@ -72,7 +72,8 @@ export async function checkout(userId: number) {
        FROM cart_items ci
        JOIN products p ON p.id = ci.product_id
        WHERE ci.cart_id = $1
-       FOR UPDATE OF p`, // lock the product rows so concurrent checkouts serialize
+       ORDER BY p.id
+       FOR UPDATE OF p`, // lock products in a consistent order (by id) → no deadlock
       [cartId],
     );
     const items = cartResult.rows;

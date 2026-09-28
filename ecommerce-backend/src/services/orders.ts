@@ -22,7 +22,10 @@ export const createOrder = async (user_id: number, items: OrderItemInput) => {
     // ---- SECTION 1: check stock & compute the total ----
     let total = 0;
     const lineItems: LineItems = [];
-    for (const item of items) {
+    // Lock products in a consistent order (by id) so concurrent orders that
+    // share products can't deadlock (everyone grabs the lower id first).
+    const sortedItems = [...items].sort((a, b) => a.product_id - b.product_id);
+    for (const item of sortedItems) {
       const result = await client.query(
         `SELECT id, price, stock_quantity FROM products WHERE id = $1 FOR UPDATE`,
         [item.product_id],

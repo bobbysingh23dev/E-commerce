@@ -1,5 +1,5 @@
 import { pool } from "../config/db";
-import type { User } from "../types/user";
+import type { Role, User } from "../types/user";
 
 export async function createUser(user: Omit<User, "id">): Promise<User> {
   try {
@@ -29,5 +29,22 @@ export async function finduserByEmail(email: string): Promise<User | null> {
   const result = await pool.query(`SELECT * FROM  users WHERE email = $1`, [
     email,
   ]);
+  return result.rows[0] || null;
+}
+
+export async function listUsers() {
+  const result = await pool.query(
+    `SELECT id, email, name, role, created_at FROM users ORDER BY id`,
+  );
+  return result.rows;
+}
+
+export async function updateUserRole(id: number, role: Role) {
+  const result = await pool.query(
+    `UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP
+     WHERE id = $2
+     RETURNING id, email, name, role, created_at`,
+    [role, id],
+  );
   return result.rows[0] || null;
 }

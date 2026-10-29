@@ -39,12 +39,34 @@ export interface CategoryInput {
   description: string | null;
 }
 
-export type UserRole = "customer" | "admin";
+// Keep in sync with ROLES in the backend (src/types/user.ts).
+export const USER_ROLES = [
+  "customer",
+  "admin",
+  "support",
+  "inventory_manager",
+  "order_manager",
+  "finance",
+  "content_editor",
+] as const;
+export type UserRole = (typeof USER_ROLES)[number];
 
 export interface PublicUser {
   id: number;
   email: string;
   name: string;
+  role: UserRole;
+}
+
+// A user row as the admin "Users" page sees it.
+export interface AdminUser extends PublicUser {
+  created_at: string;
+}
+
+export interface NewStaffInput {
+  name: string;
+  email: string;
+  password: string;
   role: UserRole;
 }
 

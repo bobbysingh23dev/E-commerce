@@ -18,6 +18,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import ProductFormPage from "./pages/admin/ProductFormPage";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 
 // Providers wrap the Router so every page + the nav can call useAuth()/useCart().
 export default function App() {
@@ -107,6 +108,14 @@ export default function App() {
                 element={
                   <AdminRoute>
                     <AdminCategoriesPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/users"
+                element={
+                  <AdminRoute>
+                    <AdminUsersPage />
                   </AdminRoute>
                 }
               />

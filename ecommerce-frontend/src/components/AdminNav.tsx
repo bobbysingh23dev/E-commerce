@@ -22,6 +22,9 @@ export default function AdminNav() {
       <NavLink to="/admin/categories" className={tabClass}>
         Categories
       </NavLink>
+      <NavLink to="/admin/users" className={tabClass}>
+        Users
+      </NavLink>
     </div>
   );
 }

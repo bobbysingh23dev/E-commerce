@@ -1,8 +1,10 @@
+import type { Role } from "./user";
+
 // The shape we sign into the JWT (see services/auth.ts → jwt.sign).
 export interface AuthUser {
   userId: number;
   email: string;
-  role: "customer" | "admin";
+  role: Role;
 }
 
 // Declaration merging: add `user` to Express's built-in Request interface,

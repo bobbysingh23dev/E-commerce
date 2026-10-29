@@ -3,7 +3,7 @@ import * as workspaceController from "../controllers/workspaces";
 import * as orderController from "../controllers/orders";
 import * as reportController from "../controllers/reports";
 import { authenticate } from "../middlewares/authenticate";
-import { requireRoles } from "../middlewares/requireRoles";
+import { authorize } from "../middlewares/authorize";
 import { validateId } from "../middlewares/validateId";
 import { validateStatusBody } from "../middlewares/validateStatusBody";
 import { validateStockUpdateBody } from "../middlewares/validateStockUpdateBody";
@@ -13,19 +13,19 @@ const workspaceRouter = Router();
 workspaceRouter.get(
   "/support",
   authenticate,
-  requireRoles("support"),
+  authorize("read", "SupportDashboard"),
   workspaceController.getSupportDashboard,
 );
 workspaceRouter.get(
   "/inventory",
   authenticate,
-  requireRoles("inventory_manager"),
+  authorize("read", "Inventory"),
   workspaceController.getInventorySummary,
 );
 workspaceRouter.patch(
   "/inventory/products/:id/stock",
   authenticate,
-  requireRoles("inventory_manager"),
+  authorize("update", "Inventory"),
   validateId,
   validateStockUpdateBody,
   workspaceController.updateInventoryStock,
@@ -33,19 +33,19 @@ workspaceRouter.patch(
 workspaceRouter.get(
   "/content",
   authenticate,
-  requireRoles("content_editor"),
+  authorize("read", "ContentDashboard"),
   workspaceController.getContentDashboard,
 );
 workspaceRouter.get(
   "/orders",
   authenticate,
-  requireRoles("order_manager"),
+  authorize("read", "Order"),
   orderController.getOrdersForStaff,
 );
 workspaceRouter.patch(
   "/orders/:id/status",
   authenticate,
-  requireRoles("order_manager"),
+  authorize("update", "Order"),
   validateId,
   validateStatusBody,
   orderController.updateOrderStatusForStaff,
@@ -53,7 +53,7 @@ workspaceRouter.patch(
 workspaceRouter.get(
   "/finance",
   authenticate,
-  requireRoles("finance"),
+  authorize("read", "Report"),
   reportController.getSummary,
 );
 

@@ -19,6 +19,23 @@ export const getOrdersByUser = async (req: Request, res: Response) => {
   res.status(200).json(orders);
 };
 
+export const getOrdersForStaff = async (_req: Request, res: Response) => {
+  const orders = await OrderServices.getOrdersForStaff();
+  res.status(200).json(orders);
+};
+
+export const updateOrderStatusForStaff = async (
+  req: Request,
+  res: Response,
+) => {
+  const order = await OrderServices.updateOrderStatusForStaff(
+    Number(req.params.id),
+    req.body.status,
+  );
+  if (!order) throw new NotFoundError("Order not found");
+  res.status(200).json(order);
+};
+
 export const getOrderById = async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const orderId = Number(req.params.id);

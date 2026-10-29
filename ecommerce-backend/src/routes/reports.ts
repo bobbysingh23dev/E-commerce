@@ -1,12 +1,12 @@
 import { Router } from "express";
 import * as reportController from "../controllers/reports";
 import { authenticate } from "../middlewares/authenticate";
-import { requireAdmin } from "../middlewares/requireAdmin";
+import { requireRoles } from "../middlewares/requireRoles";
 
 const reportRouter = Router();
 
-// Analytics are admin-only.
-reportRouter.use(authenticate, requireAdmin);
+// Finance staff and admins can review company analytics.
+reportRouter.use(authenticate, requireRoles("finance"));
 
 reportRouter.get("/summary", reportController.getSummary);
 

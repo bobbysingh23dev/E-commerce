@@ -4,10 +4,19 @@ import { useCart } from "../context/CartContext";
 import WelcomeBanner from "./WelcomeBanner";
 import Aurora from "./Aurora";
 import Logo from "./Logo";
+import type { UserRole } from "../types";
 
 // Nav links share this style; NavLink gives us an active state for free.
 const navLink = ({ isActive }: { isActive: boolean }) =>
   isActive ? "text-fg" : "link-muted";
+
+const workspaceTabs: { role: Exclude<UserRole, "customer" | "admin">; label: string }[] = [
+  { role: "support", label: "Customer support" },
+  { role: "inventory_manager", label: "Inventory" },
+  { role: "order_manager", label: "Order desk" },
+  { role: "finance", label: "Company finance" },
+  { role: "content_editor", label: "Content" },
+];
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -30,7 +39,7 @@ export default function Layout() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-5 text-sm">
+          <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm">
             <NavLink to="/" end className={navLink}>
               Shop
             </NavLink>
@@ -40,6 +49,18 @@ export default function Layout() {
                 Admin
               </NavLink>
             )}
+
+            {user?.role === "admin"
+              ? workspaceTabs.map((tab) => (
+                  <NavLink key={tab.role} to={`/workspace/${tab.role}`} className={navLink}>
+                    {tab.label}
+                  </NavLink>
+                ))
+              : user && workspaceTabs.some((tab) => tab.role === user.role) && (
+                  <NavLink to={`/workspace/${user.role}`} className={navLink}>
+                    {workspaceTabs.find((tab) => tab.role === user.role)?.label}
+                  </NavLink>
+                )}
 
             {user && (
               <NavLink to="/orders" className={navLink}>

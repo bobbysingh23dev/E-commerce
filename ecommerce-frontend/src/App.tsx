@@ -19,6 +19,7 @@ import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import ProductFormPage from "./pages/admin/ProductFormPage";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import RoleWorkspacePage from "./pages/RoleWorkspacePage";
 
 // Providers wrap the Router so every page + the nav can call useAuth()/useCart().
 export default function App() {
@@ -62,6 +63,22 @@ export default function App() {
                 }
               />
               <Route
+                path="workspace"
+                element={
+                  <ProtectedRoute>
+                    <RoleWorkspacePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="workspace/:workspaceRole"
+                element={
+                  <ProtectedRoute>
+                    <RoleWorkspacePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="pay/:orderId"
                 element={
                   <ProtectedRoute>
@@ -70,7 +87,7 @@ export default function App() {
                 }
               />
 
-              {/* Admin only — AdminRoute redirects non-admins away */}
+              {/* Admin and role-specific staff workspaces */}
               <Route
                 path="admin/dashboard"
                 element={
@@ -82,7 +99,7 @@ export default function App() {
               <Route
                 path="admin/products"
                 element={
-                  <AdminRoute>
+                  <AdminRoute allowedRoles={["content_editor"]}>
                     <AdminProductsPage />
                   </AdminRoute>
                 }
@@ -90,7 +107,7 @@ export default function App() {
               <Route
                 path="admin/products/new"
                 element={
-                  <AdminRoute>
+                  <AdminRoute allowedRoles={["content_editor"]}>
                     <ProductFormPage />
                   </AdminRoute>
                 }
@@ -98,7 +115,7 @@ export default function App() {
               <Route
                 path="admin/products/:id/edit"
                 element={
-                  <AdminRoute>
+                  <AdminRoute allowedRoles={["content_editor"]}>
                     <ProductFormPage />
                   </AdminRoute>
                 }
@@ -106,7 +123,7 @@ export default function App() {
               <Route
                 path="admin/categories"
                 element={
-                  <AdminRoute>
+                  <AdminRoute allowedRoles={["content_editor"]}>
                     <AdminCategoriesPage />
                   </AdminRoute>
                 }

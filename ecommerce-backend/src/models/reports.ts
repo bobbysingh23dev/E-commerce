@@ -5,8 +5,8 @@ export async function getOverview() {
   const r = await pool.query(
     `SELECT
        COUNT(*)::int                        AS order_count,
-       COALESCE(SUM(total), 0)              AS total_revenue,
-       COALESCE(ROUND(AVG(total), 2), 0)    AS avg_order_value
+       COALESCE(SUM(total) FILTER (WHERE status IN ('paid', 'completed')), 0) AS total_revenue,
+       COALESCE(ROUND(AVG(total) FILTER (WHERE status IN ('paid', 'completed')), 2), 0) AS avg_order_value
      FROM orders`,
   );
   return r.rows[0];
@@ -39,6 +39,7 @@ export async function getTopProducts(limit = 5) {
        SUM(oi.quantity * oi.unit_price)   AS revenue
      FROM order_items oi
      JOIN products p ON p.id = oi.product_id
+     JOIN orders o ON o.id = oi.order_id AND o.status IN ('paid', 'completed')
      GROUP BY p.id, p.name
      ORDER BY units_sold DESC
      LIMIT $1`,
@@ -56,6 +57,7 @@ export async function getBestSellerPerCategory() {
          SUM(oi.quantity)::int AS units_sold,
          ROW_NUMBER() OVER (PARTITION BY c.id ORDER BY SUM(oi.quantity) DESC) AS rn
        FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id AND o.status IN ('paid', 'completed')
        JOIN products p ON p.id = oi.product_id
        JOIN categories c ON c.id = p.category_id
        GROUP BY c.id, c.name, p.name

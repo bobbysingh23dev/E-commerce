@@ -10,6 +10,7 @@ import { validateId } from "../middlewares/validateId";
 import { validateProductBody } from "../middlewares/validateProductBody";
 import { requireAdmin } from "../middlewares/requireAdmin";
 import { authenticate } from "../middlewares/authenticate";
+import { requireRoles } from "../middlewares/requireRoles";
 
 // Pure wiring: map URL + method → [middlewares...] → controller.
 // Requests flow left to right; any middleware can stop them before the controller.
@@ -18,7 +19,7 @@ const productsRouter = Router();
 productsRouter.post(
   "/",
   authenticate,
-  requireAdmin,
+  requireRoles("content_editor"),
   validateProductBody(false),
   createProduct,
 );
@@ -29,7 +30,7 @@ productsRouter.put(
   "/:id",
   authenticate,
   validateId,
-  requireAdmin,
+  requireRoles("content_editor"),
 
   validateProductBody(true),
   putProductById,

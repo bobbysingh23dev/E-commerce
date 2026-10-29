@@ -84,6 +84,12 @@ export interface OrderSummary {
   created_at: string;
 }
 
+export interface StaffOrder extends OrderSummary {
+  customer_id: number;
+  customer_name: string;
+  customer_email: string;
+}
+
 export interface OrderItem {
   id: number;
   product_id: number;

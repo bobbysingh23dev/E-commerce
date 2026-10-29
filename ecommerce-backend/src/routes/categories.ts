@@ -3,13 +3,13 @@ import * as categoryController from "../controllers/categories";
 import { validateCategoryBody } from "../middlewares/validateCategoryBody";
 import { validateId } from "../middlewares/validateId";
 import { authenticate } from "../middlewares/authenticate";
-import { requireAdmin } from "../middlewares/requireAdmin";
+import { requireRoles } from "../middlewares/requireRoles";
 const categoriesRouter = Router();
 
 categoriesRouter.post(
   "/",
   authenticate,
-  requireAdmin,
+  requireRoles("content_editor"),
   validateCategoryBody,
   categoryController.createCategory,
 );
@@ -19,7 +19,7 @@ categoriesRouter.get("/:id", validateId, categoryController.getCategoryById);
 categoriesRouter.put(
   "/:id",
   authenticate,
-  requireAdmin,
+  requireRoles("content_editor"),
   validateCategoryBody,
   validateId,
   categoryController.updateCategoryById,
@@ -27,7 +27,7 @@ categoriesRouter.put(
 categoriesRouter.delete(
   "/:id",
   authenticate,
-  requireAdmin,
+  requireRoles("content_editor"),
   validateId,
   categoryController.deleteCategory,
 );

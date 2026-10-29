@@ -88,6 +88,17 @@ export async function getOrdersByUser(userId: number) {
   return orderModel.getOrdersByUser(userId);
 }
 
+export async function getOrdersForStaff() {
+  return orderModel.getOrdersForStaff();
+}
+
+export async function updateOrderStatusForStaff(
+  orderId: number,
+  status: string,
+) {
+  return orderModel.updateOrderStatusForStaff(orderId, status);
+}
+
 export async function getOrderById(orderId: number, userId: number) {
   const order = await orderModel.getOrderById(orderId, userId); // ownership gate
   if (!order) return null; // not found OR not yours

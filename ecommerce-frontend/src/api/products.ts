@@ -38,7 +38,7 @@ export function getProduct(id: number): Promise<Product> {
   return apiFetch<Product>(`/products/${id}`);
 }
 
-// --- Admin writes (require an admin token; attached automatically) ---
+// Product writes are available to admins and content editors.
 
 // POST /products
 export function createProduct(input: ProductInput): Promise<Product> {

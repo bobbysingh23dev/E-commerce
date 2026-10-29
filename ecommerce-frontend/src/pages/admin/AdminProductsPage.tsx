@@ -5,12 +5,14 @@ import type { Product } from "../../types";
 import AdminNav from "../../components/AdminNav";
 import ProductImage from "../../components/ProductImage";
 import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     let ignore = false;
@@ -95,12 +97,14 @@ export default function AdminProductsPage() {
                     >
                       Edit
                     </Link>
-                    <button
-                      onClick={() => handleDelete(p)}
-                      className="ml-4 text-red-400 hover:underline"
-                    >
-                      Delete
-                    </button>
+                    {user?.role === "admin" && (
+                      <button
+                        onClick={() => handleDelete(p)}
+                        className="ml-4 text-red-400 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

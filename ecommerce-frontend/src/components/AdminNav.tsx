@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-lg px-3.5 py-1.5 text-sm font-medium transition ${
@@ -8,23 +9,29 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export default function AdminNav() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   return (
     <div className="mb-6 flex items-center gap-2 border-b border-line pb-4">
       <span className="mr-2 text-xs font-semibold uppercase tracking-wider text-faint">
-        Admin
+        {isAdmin ? "Admin" : "Content"}
       </span>
-      <NavLink to="/admin/dashboard" className={tabClass}>
-        Dashboard
-      </NavLink>
+      {isAdmin && (
+        <NavLink to="/admin/dashboard" className={tabClass}>
+          Dashboard
+        </NavLink>
+      )}
       <NavLink to="/admin/products" className={tabClass}>
         Products
       </NavLink>
       <NavLink to="/admin/categories" className={tabClass}>
         Categories
       </NavLink>
-      <NavLink to="/admin/users" className={tabClass}>
-        Users
-      </NavLink>
+      {isAdmin && (
+        <NavLink to="/admin/users" className={tabClass}>
+          Users
+        </NavLink>
+      )}
     </div>
   );
 }

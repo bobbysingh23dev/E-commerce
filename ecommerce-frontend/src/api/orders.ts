@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { OrderSummary, OrderDetail, OrderStatus } from "../types";
+import type { OrderSummary, OrderDetail, OrderStatus, StaffOrder } from "../types";
 
 export interface OrderItemInput {
   product_id: number;
@@ -41,6 +41,22 @@ export function updateOrderStatus(
   status: OrderStatus,
 ): Promise<OrderSummary> {
   return apiFetch<OrderSummary>(`/orders/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+// Staff order queue: support and order managers can read all orders.
+export function getStaffOrders(): Promise<StaffOrder[]> {
+  return apiFetch<StaffOrder[]>("/orders/manage");
+}
+
+// Only order managers can change order status from the staff queue.
+export function updateStaffOrderStatus(
+  id: number,
+  status: OrderStatus,
+): Promise<OrderSummary> {
+  return apiFetch<OrderSummary>(`/orders/manage/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   });

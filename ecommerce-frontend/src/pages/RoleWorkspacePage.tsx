@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { getCategories } from "../api/categories";
-import { getStaffOrders, updateStaffOrderStatus } from "../api/orders";
-import { getProducts } from "../api/products";
-import { getSummary } from "../api/reports";
+import {
+  getContentWorkspace,
+  getFinanceWorkspace,
+  getInventoryWorkspace,
+  getOrderManagementWorkspace,
+  getSupportWorkspace,
+  updateInventoryStock,
+  updateManagedOrderStatus,
+  type ContentWorkspace as ContentWorkspaceData,
+  type InventoryProduct,
+  type InventoryWorkspace as InventoryWorkspaceData,
+  type SupportWorkspace as SupportWorkspaceData,
+} from "../api/workspaces";
 import type {
-  Category,
   OrderStatus,
-  Product,
   ReportSummary,
   StaffOrder,
   UserRole,
 } from "../types";
 import StatusBadge from "../components/StatusBadge";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 type StaffRole = Exclude<UserRole, "customer" | "admin">;
 
@@ -57,6 +65,7 @@ const ORDER_STATUSES: OrderStatus[] = [
 
 export default function RoleWorkspacePage() {
   const { user } = useAuth();
+  const toast = useToast();
   const { workspaceRole } = useParams();
   const signedInRole = user?.role;
   const requestedRole = STAFF_ROLES.find((role) => role === workspaceRole);
@@ -65,13 +74,15 @@ export default function RoleWorkspacePage() {
     signedInRole && STAFF_ROLES.includes(signedInRole as StaffRole)
       ? (signedInRole as StaffRole)
       : undefined;
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [supportData, setSupportData] = useState<SupportWorkspaceData | null>(null);
+  const [inventoryData, setInventoryData] = useState<InventoryWorkspaceData | null>(null);
+  const [contentData, setContentData] = useState<ContentWorkspaceData | null>(null);
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [orders, setOrders] = useState<StaffOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const [updatingProductId, setUpdatingProductId] = useState<number | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -81,27 +92,20 @@ export default function RoleWorkspacePage() {
     async function load() {
       try {
         if (activeRole === "finance") {
-          const result = await getSummary();
+          const result = await getFinanceWorkspace();
           if (!ignore) setSummary(result);
-        } else if (activeRole === "support" || activeRole === "order_manager") {
-          const result = await getStaffOrders();
+        } else if (activeRole === "support") {
+          const result = await getSupportWorkspace();
+          if (!ignore) setSupportData(result);
+        } else if (activeRole === "order_manager") {
+          const result = await getOrderManagementWorkspace();
           if (!ignore) setOrders(result);
-        } else if (activeRole === "inventory_manager" || activeRole === "content_editor") {
-          const firstPage = await getProducts({ limit: 100, sort: "name" });
-          const remainingPages = await Promise.all(
-            Array.from({ length: Math.max(0, firstPage.pagination.totalPages - 1) }, (_, index) =>
-              getProducts({ limit: 100, page: index + 2, sort: "name" }),
-            ),
-          );
-          const allProducts = [
-            ...firstPage.data,
-            ...remainingPages.flatMap((page) => page.data),
-          ];
-          if (!ignore) setProducts(allProducts);
-          if (activeRole === "content_editor") {
-            const categoryList = await getCategories();
-            if (!ignore) setCategories(categoryList);
-          }
+        } else if (activeRole === "inventory_manager") {
+          const result = await getInventoryWorkspace();
+          if (!ignore) setInventoryData(result);
+        } else if (activeRole === "content_editor") {
+          const result = await getContentWorkspace();
+          if (!ignore) setContentData(result);
         }
       } catch (err) {
         if (!ignore) {
@@ -138,7 +142,7 @@ export default function RoleWorkspacePage() {
     setUpdatingOrderId(order.id);
     setError(null);
     try {
-      const updated = await updateStaffOrderStatus(order.id, status);
+      const updated = await updateManagedOrderStatus(order.id, status);
       setOrders((current) =>
         current.map((item) =>
           item.id === updated.id ? { ...item, status: updated.status } : item,
@@ -151,11 +155,20 @@ export default function RoleWorkspacePage() {
     }
   }
 
-  const lowStock = products.filter((product) => product.stock_quantity > 0 && product.stock_quantity <= 10);
-  const outOfStock = products.filter((product) => product.stock_quantity <= 0);
-  const totalUnits = products.reduce((sum, product) => sum + product.stock_quantity, 0);
-  const missingDescriptions = products.filter((product) => !product.description?.trim());
-  const missingImages = products.filter((product) => !product.image_url?.trim());
+  async function handleStockUpdate(productId: number, stockQuantity: number, version: number) {
+    setUpdatingProductId(productId);
+    setError(null);
+    try {
+      await updateInventoryStock(productId, stockQuantity, version);
+      setInventoryData(await getInventoryWorkspace());
+      toast("Stock quantity updated", "success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not update stock");
+    } finally {
+      setUpdatingProductId(null);
+    }
+  }
+
   const orderCounts = orders.reduce<Record<string, number>>((counts, order) => {
     counts[order.status] = (counts[order.status] ?? 0) + 1;
     return counts;
@@ -177,26 +190,36 @@ export default function RoleWorkspacePage() {
       ) : (
         <>
           {staffRole === "finance" && summary && <FinanceDashboard summary={summary} />}
-          {staffRole === "inventory_manager" && (
+          {staffRole === "inventory_manager" && inventoryData && (
             <InventoryDashboard
-              products={products}
-              lowStock={lowStock}
-              outOfStock={outOfStock}
-              totalUnits={totalUnits}
+              data={inventoryData}
+              updatingProductId={updatingProductId}
+              onStockUpdate={handleStockUpdate}
             />
           )}
-          {staffRole === "content_editor" && (
-            <ContentDashboard
-              products={products}
-              categories={categories}
-              missingDescriptions={missingDescriptions.length}
-              missingImages={missingImages.length}
+          {staffRole === "content_editor" && contentData && (
+            <ContentDashboard data={contentData} />
+          )}
+          {staffRole === "support" && supportData && (
+            <OrdersDashboard
+              orders={supportData.recentOrders}
+              counts={{
+                pending: supportData.summary.pending_orders,
+                paid: supportData.summary.paid_orders,
+                completed: supportData.summary.completed_orders,
+                cancelled: supportData.summary.cancelled_orders,
+              }}
+              totalOrders={supportData.summary.total_orders}
+              canUpdate={false}
+              updatingOrderId={null}
+              onStatusChange={changeOrderStatus}
             />
           )}
-          {(staffRole === "support" || staffRole === "order_manager") && (
+          {staffRole === "order_manager" && (
             <OrdersDashboard
               orders={orders}
               counts={orderCounts}
+              totalOrders={orders.length}
               canUpdate={staffRole === "order_manager"}
               updatingOrderId={updatingOrderId}
               onStatusChange={changeOrderStatus}
@@ -264,28 +287,26 @@ function FinanceDashboard({ summary }: { summary: ReportSummary }) {
 }
 
 function InventoryDashboard({
-  products,
-  lowStock,
-  outOfStock,
-  totalUnits,
+  data,
+  updatingProductId,
+  onStockUpdate,
 }: {
-  products: Product[];
-  lowStock: Product[];
-  outOfStock: Product[];
-  totalUnits: number;
+  data: InventoryWorkspaceData;
+  updatingProductId: number | null;
+  onStockUpdate: (productId: number, stockQuantity: number, version: number) => void;
 }) {
-  const attention = [...outOfStock, ...lowStock].slice(0, 12);
+  const { summary, attentionProducts } = data;
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric label="Products" value={products.length} />
-        <Metric label="Units in stock" value={totalUnits} />
-        <Metric label="Low stock" value={lowStock.length} note="10 units or fewer" />
-        <Metric label="Out of stock" value={outOfStock.length} />
+        <Metric label="Products" value={summary.product_count} />
+        <Metric label="Units in stock" value={summary.total_units} />
+        <Metric label="Low stock" value={summary.low_stock_count} note="10 units or fewer" />
+        <Metric label="Out of stock" value={summary.out_of_stock_count} />
       </div>
       <section className="card overflow-x-auto p-5">
         <h2 className="mb-4 text-lg font-semibold">Stock needing attention</h2>
-        {attention.length === 0 ? (
+        {attentionProducts.length === 0 ? (
           <p className="text-sm text-muted">All products have more than 10 units in stock.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -293,15 +314,23 @@ function InventoryDashboard({
               <tr>
                 <th className="py-3 pr-4 font-medium">Product</th>
                 <th className="py-3 pr-4 font-medium">Category</th>
-                <th className="py-3 text-right font-medium">Available</th>
+                <th className="py-3 pr-4 text-right font-medium">Available</th>
+                <th className="py-3 text-right font-medium">Update stock</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {attention.map((product) => (
+              {attentionProducts.map((product) => (
                 <tr key={product.id}>
                   <td className="py-3 pr-4 font-medium">{product.name}</td>
                   <td className="py-3 pr-4 text-muted">{product.category_name ?? "Uncategorized"}</td>
-                  <td className="py-3 text-right font-semibold text-fg">{product.stock_quantity}</td>
+                  <td className="py-3 pr-4 text-right font-semibold text-fg">{product.stock_quantity}</td>
+                  <td className="py-2 text-right">
+                    <InventoryStockForm
+                      product={product}
+                      saving={updatingProductId === product.id}
+                      onSave={(quantity) => onStockUpdate(product.id, quantity, product.version)}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -312,24 +341,54 @@ function InventoryDashboard({
   );
 }
 
-function ContentDashboard({
-  products,
-  categories,
-  missingDescriptions,
-  missingImages,
+function InventoryStockForm({
+  product,
+  saving,
+  onSave,
 }: {
-  products: Product[];
-  categories: Category[];
-  missingDescriptions: number;
-  missingImages: number;
+  product: InventoryProduct;
+  saving: boolean;
+  onSave: (quantity: number) => void;
 }) {
+  const [quantity, setQuantity] = useState(String(product.stock_quantity));
+
+  useEffect(() => {
+    setQuantity(String(product.stock_quantity));
+  }, [product.stock_quantity]);
+
+  return (
+    <form
+      className="flex justify-end gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSave(Number(quantity));
+      }}
+    >
+      <input
+        aria-label={`New stock quantity for ${product.name}`}
+        type="number"
+        min="0"
+        step="1"
+        required
+        value={quantity}
+        onChange={(event) => setQuantity(event.target.value)}
+        className="w-20 rounded-lg border border-line bg-transparent px-2 py-1 text-right text-sm"
+      />
+      <button type="submit" disabled={saving} className="btn-ghost px-2 py-1 disabled:opacity-50">
+        {saving ? "Saving…" : "Save"}
+      </button>
+    </form>
+  );
+}
+
+function ContentDashboard({ data }: { data: ContentWorkspaceData }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric label="Products" value={products.length} />
-        <Metric label="Categories" value={categories.length} />
-        <Metric label="Missing descriptions" value={missingDescriptions} />
-        <Metric label="Missing images" value={missingImages} />
+        <Metric label="Products" value={data.product_count} />
+        <Metric label="Categories" value={data.category_count} />
+        <Metric label="Missing descriptions" value={data.missing_descriptions} />
+        <Metric label="Missing images" value={data.missing_images} />
       </div>
       <section className="card p-5">
         <h2 className="mb-2 text-lg font-semibold">Catalog tasks</h2>
@@ -348,12 +407,14 @@ function ContentDashboard({
 function OrdersDashboard({
   orders,
   counts,
+  totalOrders,
   canUpdate,
   updatingOrderId,
   onStatusChange,
 }: {
   orders: StaffOrder[];
   counts: Record<string, number>;
+  totalOrders: number;
   canUpdate: boolean;
   updatingOrderId: number | null;
   onStatusChange: (order: StaffOrder, status: OrderStatus) => void;
@@ -362,7 +423,7 @@ function OrdersDashboard({
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric label="All orders" value={orders.length} />
+        <Metric label="All orders" value={totalOrders} />
         <Metric label="Pending" value={counts.pending ?? 0} />
         <Metric label="Paid" value={counts.paid ?? 0} />
         <Metric label="Needs attention" value={needsAttention} note="Pending or cancelled" />

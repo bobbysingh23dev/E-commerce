@@ -7,6 +7,7 @@ import cartRouter from "./carts";
 import reportRouter from "./reports";
 import paymentRouter from "./payment";
 import userRouter from "./users";
+import workspaceRouter from "./workspaces";
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/cart", cartRouter);
 router.use("/reports", reportRouter);
 router.use("/payments", paymentRouter);
 router.use("/users", userRouter);
+router.use("/workspaces", workspaceRouter);
 
 export default router;
